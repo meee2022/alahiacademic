@@ -1,7 +1,9 @@
 import { insforge } from "../src/lib/insforge/client";
 
 async function test() {
-  const { data } = insforge.storage.from("members-docs").getPublicUrl("profiles/test-image.jpg");
-  console.log("Public URL:", data?.publicUrl);
+  const result = insforge.storage.from("members-docs").getPublicUrl("profiles/test-image.jpg");
+  // The SDK returns a string directly or an object based on the version. 
+  // Based on the error, it's returning a String object.
+  console.log("Public URL:", result);
 }
 test();
