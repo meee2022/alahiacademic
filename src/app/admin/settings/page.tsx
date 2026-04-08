@@ -45,7 +45,7 @@ export default function SettingsPage() {
       if (error) throw error;
 
       // insforge.storage.upload returns { data: { url, key }, error }
-      const publicUrl = data?.url || data?.publicUrl;
+      const publicUrl = data?.url;
       
       if (!publicUrl) {
           console.error("Upload data:", data);

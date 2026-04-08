@@ -102,7 +102,7 @@ export default function UsersPage() {
       name: sysUser?.name || authUser?.user_metadata?.full_name || "",
       email: email,
       role: sysUser?.role || "receptionist",
-      passwordHash: sysUser?.passwordHash || "N/A",
+      password_hash: sysUser?.password_hash || "N/A",
     });
     setShowModal(true);
   };

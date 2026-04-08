@@ -126,8 +126,7 @@ export default function MemberDetailsPage() {
       const actualPath = (uploadData as any).path || uploadData.key || storageKey;
       
       // Get the correct public URL from the SDK
-      const rawPublicUrl = insforge.storage.from("members-docs").getPublicUrl(actualPath);
-      const remoteUrl = typeof rawPublicUrl === 'string' ? rawPublicUrl : (rawPublicUrl as any)?.data?.publicUrl || rawPublicUrl;
+      const remoteUrl = insforge.storage.from("members-docs").getPublicUrl(actualPath);
       
       console.log("Photo uploaded", remoteUrl);
       await updateMember(id, { photoUrl: remoteUrl });
