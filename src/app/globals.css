@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-sans);
+  --font-almarai: var(--font-almarai);
+  --color-secondary-fixed: #ffdea5;
+  --color-primary-container: #8a1538;
+  --color-tertiary: #61111e;
+  --color-on-secondary-container: #785a1a;
+  --color-on-primary-fixed-variant: #8a1538;
+  --color-on-primary-fixed: #400013;
+  --color-inverse-surface: #2f3131;
+  --color-surface-container-high: #e8e8e8;
+  --color-on-tertiary-fixed: #40000d;
+  --color-surface-variant: #e2e2e2;
+  --color-on-secondary: #ffffff;
+  --color-outline-variant: #debfc2;
+  --color-surface-tint: #aa304f;
+  --color-secondary-container: #fed488;
+  --color-on-tertiary: #ffffff;
+  --color-surface-container-highest: #e2e2e2;
+  --color-secondary: #775a19;
+  --color-error-container: #ffdad6;
+  --color-primary-fixed: #ffd9dd;
+  --color-surface-bright: #f9f9f9;
+  --color-surface-container: #eeeeee;
+  --color-on-surface: #1a1c1c;
+  --color-primary: #670024;
+  --color-tertiary-fixed-dim: #ffb2b6;
+  --color-on-error: #ffffff;
+  --color-on-background: #1a1c1c;
+  --color-tertiary-container: #7f2833;
+  --color-surface-container-low: #f3f3f3;
+  --color-surface: #f9f9f9;
+  --color-primary-fixed-dim: #ffb2bd;
+  --color-background: #f9f9f9;
+  --color-surface-dim: #dadada;
+  --color-on-tertiary-fixed-variant: #7f2833;
+  --color-error: #ba1a1a;
+  --color-on-secondary-fixed: #261900;
+  --color-secondary-fixed-dim: #e9c176;
+  --color-on-primary: #ffffff;
+  --color-outline: #8a7174;
+  --color-surface-container-lowest: #ffffff;
+  --color-inverse-on-surface: #f0f1f1;
+  --color-tertiary-fixed: #ffdada;
+  --color-on-primary-container: #ff97a8;
+  --color-inverse-primary: #ffb2bd;
+  --color-on-error-container: #93000a;
+  --color-on-secondary-fixed-variant: #5d4201;
+  --color-on-tertiary-container: #ff989f;
+  --color-on-surface-variant: #574144;
+}
+
+@layer base {
+  :root {
+    --background: #F5F5F7;
+    --foreground: #2d1820;
+    --primary: #8A1538; /* Maroon */
+    --primary-foreground: #ffffff;
+    --secondary: #C5A059; /* Gold */
+    --secondary-foreground: #ffffff;
+    --tertiary: #5D1026; /* Dark Maroon */
+    --sidebar: #8A1538;
+    
+    --card: #ffffff;
+    --card-foreground: #2d1820;
+    --border: #f2eaea;
+    
+    --ring: #8A1538;
+    --radius: 0.75rem;
+  }
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-almarai), var(--font-sans), sans-serif;
+  direction: rtl;
+}
+
+/* Responsive Utilities */
+@layer components {
+  .table-container {
+    @apply w-full overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .table-container::-webkit-scrollbar {
+    height: 4px;
+  }
+  
+  .table-container::-webkit-scrollbar-thumb {
+    @apply bg-gray-200 rounded-full;
+  }
+  
+  /* Modal Mobile Safety */
+  .modal-content-safe {
+    @apply pb-24 sm:pb-6;
+  }
+}

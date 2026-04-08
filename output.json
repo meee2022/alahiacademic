@@ -1,0 +1,16 @@
+[
+  {
+    "step": "signup",
+    "data": null,
+    "error": {
+      "name": "InsForgeError",
+      "statusCode": 409,
+      "error": "ALREADY_EXISTS"
+    }
+  },
+  {
+    "step": "db catch",
+    "error": "insforge.from is not a function",
+    "stack": "TypeError: insforge.from is not a function\n    at main (file:///C:/Users/M/Desktop/github%20for%20local/karateh/createAdmin.mjs:26:8)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)"
+  }
+]

@@ -1,0 +1,10 @@
+[
+  {
+    "step": "signup",
+    "data": {
+      "accessToken": null,
+      "requireEmailVerification": true
+    },
+    "error": null
+  }
+]
