@@ -137,6 +137,29 @@ export default function PaymentsPage() {
     }
   };
 
+  const handleResetAllPayments = async () => {
+    const confirm1 = confirm("⚠️ تحذير: سيتم حذف جميع بيانات الإيرادات والمصاريف نهائياً. هل أنت متأكد؟");
+    if (!confirm1) return;
+    
+    const confirm2 = confirm("هذا الإجراء لا يمكن التراجع عنه. هل تود المتابعة فعلاً؟");
+    if (!confirm2) return;
+
+    setLoading(true);
+    try {
+      // Deleting all records from 'Payment' table
+      const { error } = await insforge.database.from("Payment").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+      if (error) throw error;
+      
+      alert("تم تصفير جميع الحسابات بنجاح.");
+      fetchPayments();
+    } catch (err) {
+      console.error(err);
+      alert("حدث خطأ أثناء تصفير البيانات");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filteredPayments = payments.filter(p => {
     const matchesSearch = p.description?.includes(searchTerm) ||
       p.Member?.fullNameArabic?.includes(searchTerm) ||
@@ -212,9 +235,18 @@ export default function PaymentsPage() {
           <Menu className="w-6 h-6 text-gray-800 cursor-pointer" />
           <h1 className="text-2xl font-black text-[#5A0B1A]">نظرة عامة على الحسابات</h1>
         </div>
-        <button onClick={() => window.print()} className="w-10 h-10 rounded-full bg-[#fcecc2] flex items-center justify-center text-[#a0743b] font-bold shadow-sm hover:bg-[#a0743b] hover:text-white transition-colors">
-          <Printer className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={handleResetAllPayments} 
+            title="تصفير جميع البيانات"
+            className="w-10 h-10 rounded-full bg-yellow-400 flex items-center justify-center text-white font-bold shadow-sm hover:bg-yellow-500 transition-colors"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+          <button onClick={() => window.print()} className="w-10 h-10 rounded-full bg-[#fcecc2] flex items-center justify-center text-[#a0743b] font-bold shadow-sm hover:bg-[#a0743b] hover:text-white transition-colors">
+            <Printer className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Cards */}
