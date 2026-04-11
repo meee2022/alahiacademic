@@ -194,9 +194,9 @@ export default function CoachesPage() {
       if (uploadError) throw uploadError;
       if (!uploadData) throw new Error("لم يتم إرجاع بيانات الرفع");
       
-      // Use manual public URL (same format that works for members)
-      const remoteUrl = `https://pzqe7ma6.ap-southeast.insforge.app/storage/v1/object/public/members-docs/${uploadData.key}`;
-      console.log("Photo uploaded. Public URL:", remoteUrl);
+      // Use the URL provided directly by the upload response, or fallback using the storageKey
+      const remoteUrl = uploadData.url || `https://pzqe7ma6.ap-southeast.insforge.app/storage/v1/object/public/members-docs/${uploadData.path || uploadData.key || storageKey}`;
+      console.log("Photo uploaded. Data:", uploadData, "URL:", remoteUrl);
       
       // Store remote URL in ref (NEVER loses it, immune to re-renders)
       uploadedRemoteUrl.current = remoteUrl;
@@ -418,10 +418,10 @@ export default function CoachesPage() {
                   </button>
                 </div>
 
-                {/* Delete Button (Optional, can be hidden or moved) */}
+                {/* Delete Button */}
                 <button 
                   onClick={() => handleDelete(coach.id, coach.fullName)}
-                  className="absolute -top-2 -left-2 w-8 h-8 rounded-full bg-white border border-gray-100 text-gray-300 hover:text-rose-500 shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
+                  className="absolute top-4 left-4 w-9 h-9 rounded-full bg-white/80 backdrop-blur-md border border-rose-100 text-rose-300 hover:text-rose-600 hover:bg-rose-50 shadow-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all z-20"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>

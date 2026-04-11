@@ -15,8 +15,9 @@ export default function SubscriptionsPage() {
   const [showModal, setShowModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editingSub, setEditingSub] = useState<any>(null);
-  const [form, setForm] = useState({ subscriptionStart: "", subscriptionEnd: "", monthlyFee: "", status: "active" });
+  const [form, setForm] = useState({ subscriptionStart: "", subscriptionEnd: "", monthlyFee: "", status: "active", coachId: "" });
   const [printingId, setPrintingId] = useState<string | null>(null);
+  const [coaches, setCoaches] = useState<any[]>([]);
   const router = useRouter();
 
   const handlePrintReceipt = async (sub: any) => {
@@ -40,11 +41,11 @@ export default function SubscriptionsPage() {
           .eq("memberId", sub.memberId)
           .order("date", { ascending: false })
           .limit(1);
-        
         if (globalData && globalData.length > 0) {
            router.push(`/receipt/${globalData[0].id}`);
         } else {
-           alert("لا يوجد إيصالات مدفوعة لهذا العضو حالياً");
+           // Fallback to enrollment-based receipt if no formal payment was found
+           router.push(`/admin/receipts/enrollment/${sub.id}`);
         }
       }
     } catch (err) {
@@ -75,6 +76,9 @@ export default function SubscriptionsPage() {
     if (sportsData) setSports(sportsData);
     const { data } = await insforge.database.from("SportsEnrollment").select("*, Member(fullNameArabic, photoUrl), Sport(id, name)").order("subscriptionEnd", { ascending: true });
     if (data) setSubscriptions(data);
+    // Fetch coaches
+    const { data: coachesData } = await insforge.database.from("Coach").select("id, fullName, sportId, CoachsalaryPercentage").order("fullName");
+    if (coachesData) setCoaches(coachesData);
     setLoading(false);
   }
 
@@ -108,7 +112,8 @@ export default function SubscriptionsPage() {
       subscriptionStart: sub.subscriptionStart || "",
       subscriptionEnd: sub.subscriptionEnd || "",
       monthlyFee: sub.monthlyFee?.toString() || "",
-      status: sub.status || "active"
+      status: sub.status || "active",
+      coachId: ""
     });
     setShowModal(true);
   };
@@ -122,7 +127,8 @@ export default function SubscriptionsPage() {
       subscriptionStart: today.toISOString().split("T")[0],
       subscriptionEnd: end.toISOString().split("T")[0],
       monthlyFee: sub.monthlyFee?.toString() || "",
-      status: "active"
+      status: "active",
+      coachId: ""
     });
     setShowModal(true);
   };
@@ -355,6 +361,38 @@ export default function SubscriptionsPage() {
               </div>
 
               <div className="space-y-4">
+                {/* Coach Selector */}
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase">المدرب</label>
+                  <select
+                    value={form.coachId}
+                    onChange={e => setForm({...form, coachId: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#8A1538]/20 focus:border-[#8A1538] text-gray-900 font-medium bg-[#F9F9FB]"
+                  >
+                    <option value="">-- اختر المدرب (اختياري) --</option>
+                    {coaches
+                      .filter(c => !c.sportId || c.sportId === editingSub?.Sport?.id)
+                      .map(coach => (
+                        <option key={coach.id} value={coach.id}>
+                          {coach.fullName}{coach.CoachsalaryPercentage ? ` — ${coach.CoachsalaryPercentage}%` : ""}
+                        </option>
+                      ))
+                    }
+                  </select>
+                  {form.coachId && (() => {
+                    const coach = coaches.find(c => c.id === form.coachId);
+                    const pct = coach?.CoachsalaryPercentage;
+                    const share = pct && form.monthlyFee ? Math.round((Number(form.monthlyFee) * pct) / 100) : null;
+                    return coach ? (
+                      <div className="mt-2 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2 text-xs text-amber-700 font-medium flex gap-4">
+                        <span>📊 {coach.fullName}</span>
+                        {pct && <span>النسبة: <strong>{pct}%</strong></span>}
+                        {share !== null && <span>الحصة: <strong>{share} ر.ق</strong></span>}
+                      </div>
+                    ) : null;
+                  })()}
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase">بداية الاشتراك</label>

@@ -4,8 +4,10 @@ import { useState, useEffect } from "react";
 import { Plus, Search, Printer, Download, Loader2, X, Wallet, Edit, Trash2, TrendingUp, TrendingDown, ArrowDownLeft, ArrowUpRight, Menu } from "lucide-react";
 import { getPayments, PaymentWithMember, getSports } from "@/lib/insforge/queries";
 import { insforge } from "@/lib/insforge/client";
+import { useRouter } from "next/navigation";
 
 export default function PaymentsPage() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -29,7 +31,8 @@ export default function PaymentsPage() {
     paymentType: "subscription",
     sportId: "",
     memberId: "",
-    notes: ""
+    notes: "",
+    endOfSubscriptionDate: ""
   });
 
   useEffect(() => {
@@ -59,6 +62,7 @@ export default function PaymentsPage() {
 
   const openModal = (type: "income" | "expense") => {
     setModalType(type);
+    setEditingId(null);
     setFormData({
       amount: "",
       description: "",
@@ -67,7 +71,8 @@ export default function PaymentsPage() {
       paymentType: type === "income" ? "subscription" : "other",
       sportId: "",
       memberId: "",
-      notes: ""
+      notes: "",
+      endOfSubscriptionDate: ""
     });
     setShowModal(true);
   };
@@ -88,7 +93,8 @@ export default function PaymentsPage() {
         category: modalType,
         sportId: formData.sportId || null,
         memberId: formData.memberId || null,
-        notes: formData.notes || null
+        notes: formData.notes || null,
+        endOfSubscriptionDate: formData.paymentType === 'subscription' && formData.endOfSubscriptionDate ? formData.endOfSubscriptionDate : null
       };
 
       if (editingId) {
@@ -120,7 +126,8 @@ export default function PaymentsPage() {
       paymentType: payment.paymentType,
       sportId: payment.sportId || "",
       memberId: payment.memberId || "",
-      notes: payment.notes || ""
+      notes: payment.notes || "",
+      endOfSubscriptionDate: payment.endOfSubscriptionDate || ""
     });
     setShowModal(true);
   };
@@ -131,6 +138,8 @@ export default function PaymentsPage() {
       const { error } = await insforge.database.from("Payment").delete().eq("id", id);
       if (error) throw error;
       fetchPayments();
+      setShowModal(false);
+      setEditingId(null);
     } catch (err) {
       console.error(err);
       alert("حدث خطأ أثناء الحذف");
@@ -182,14 +191,23 @@ export default function PaymentsPage() {
     const amt = Number(p.amount);
     if (p.category === "income") {
       acc.income += amt;
+      const isBank = ["transferATM", "bankDeposit", "cardMachine"].includes(p.method);
+      
       if (p.method === "cash") acc.cash += amt;
+      if (isBank) acc.bank += amt;
       if (p.method === "transferATM" || p.method === "bankDeposit") acc.transfers += amt;
       if (p.paymentType === "belt") acc.belts += amt;
+      
+      if (p.paymentType === "belt" || p.paymentType === "uniform") {
+         acc.equipTotal += amt;
+         if (p.method === "cash") acc.equipCash += amt;
+         if (isBank) acc.equipBank += amt;
+      }
     } else {
       acc.expenses += amt;
     }
     return acc;
-  }, { cash: 0, transfers: 0, belts: 0, expenses: 0, income: 0 });
+  }, { cash: 0, bank: 0, transfers: 0, belts: 0, expenses: 0, income: 0, equipTotal: 0, equipCash: 0, equipBank: 0 });
 
   const handleExportCSV = () => {
     const headers = ["التاريخ", "الوصف", "العضو", "التصنيف", "المبلغ", "طريقة الدفع", "النوع", "ملاحظات"];
@@ -249,69 +267,59 @@ export default function PaymentsPage() {
         </div>
       </div>
 
-      {/* Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-
-        {/* REVENUE */}
-        <div className="bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden flex flex-col justify-between border-r-[4px] border-[#a0743b] h-48 print:shadow-none print:border print:border-gray-200">
-          <div className="absolute -top-12 -right-12 w-32 h-32 bg-red-50 rounded-full opacity-50"></div>
+      {/* Main Cards Row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+        {/* TOTAL REVENUE */}
+        <div className="bg-white rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden flex flex-col justify-between border-r-[4px] border-[#a0743b] print:shadow-none print:border print:border-gray-200">
+          <div className="absolute -top-12 -right-12 w-32 h-32 bg-amber-50 rounded-full opacity-50"></div>
           <div>
-            <div className="flex justify-between items-start mb-4 relative z-10">
-              <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-[#8A1538]" />
+            <div className="flex justify-between items-start mb-3 relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center">
+                <TrendingUp className="w-4 h-4 text-[#8A1538]" />
               </div>
-              <span className="text-[10px] font-bold tracking-widest text-[#8A1538] uppercase mt-2">الإيرادات</span>
+              <span className="text-[10px] font-bold tracking-widest text-[#8A1538] uppercase mt-1">الإجمالي</span>
             </div>
             <div className="text-gray-500 text-sm font-medium mb-1 relative z-10">إجمالي الإيرادات</div>
-            <div className="flex items-baseline gap-1.5 mb-3 relative z-10">
-              <span className="text-4xl font-black text-gray-900">{totals.income.toLocaleString()}</span>
+            <div className="flex items-baseline gap-1.5 mb-1 relative z-10">
+              <span className="text-3xl font-black text-gray-900">{totals.income.toLocaleString()}</span>
               <span className="text-xs font-bold text-[#8A1538]">ر.ق</span>
             </div>
-          </div>
-
-          <div className="flex gap-2 relative z-10 flex-wrap">
-            <span className="bg-emerald-50 text-emerald-600 text-[10px] font-bold px-2.5 py-1 rounded-full">كاش: {totals.cash}</span>
-            <span className="bg-blue-50 text-blue-600 text-[10px] font-bold px-2.5 py-1 rounded-full">تحويل: {totals.transfers}</span>
           </div>
         </div>
 
         {/* EXPENSES */}
-        <div className="bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden flex flex-col justify-between border-r-[4px] border-gray-100 h-48 print:shadow-none print:border print:border-gray-200">
+        <div className="bg-white rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden flex flex-col justify-between border-r-[4px] border-gray-100 print:shadow-none print:border print:border-gray-200">
           <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#F8F9FB] rounded-full opacity-80"></div>
           <div>
-            <div className="flex justify-between items-start mb-4 relative z-10">
-              <div className="w-10 h-10 rounded-xl bg-[#F8F9FB] flex items-center justify-center">
-                <TrendingDown className="w-5 h-5 text-slate-400" />
+            <div className="flex justify-between items-start mb-3 relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-[#F8F9FB] flex items-center justify-center">
+                <TrendingDown className="w-4 h-4 text-slate-400" />
               </div>
-              <span className="text-[10px] font-bold tracking-widest text-slate-400 uppercase mt-2">المصروفات</span>
+              <span className="text-[10px] font-bold tracking-widest text-slate-400 uppercase mt-1">المصروفات</span>
             </div>
             <div className="text-gray-500 text-sm font-medium mb-1 relative z-10">إجمالي المصروفات</div>
-            <div className="flex items-baseline gap-1.5 mb-3 relative z-10">
-              <span className="text-4xl font-black text-gray-900">{totals.expenses.toLocaleString()}</span>
+            <div className="flex items-baseline gap-1.5 mb-1 relative z-10">
+              <span className="text-3xl font-black text-gray-900">{totals.expenses.toLocaleString()}</span>
               <span className="text-xs font-bold text-slate-400">ر.ق</span>
             </div>
-          </div>
-          <div className="flex gap-2 relative z-10">
-            <span className="bg-rose-50 text-rose-500 text-[10px] font-bold px-2.5 py-1 rounded-full">إدارة وتأسيس</span>
-            <span className="text-gray-400 text-[10px] font-medium py-1">النسبة الأكبر</span>
           </div>
         </div>
 
         {/* NET PROFIT */}
-        <div className="bg-[#5A0B1A] rounded-3xl p-6 shadow-xl shadow-[#5A0B1A]/20 relative overflow-hidden flex flex-col justify-between text-white h-48 print:shadow-none">
+        <div className="bg-[#5A0B1A] rounded-3xl p-5 shadow-xl shadow-[#5A0B1A]/20 relative overflow-hidden flex flex-col justify-between text-white print:shadow-none">
           <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
           <div className="absolute top-0 bottom-0 left-0 w-1/4 bg-white/5 blur-2xl skew-x-12"></div>
           <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#8A1538] rounded-full"></div>
           <div>
-            <div className="flex justify-between items-start mb-4 relative z-10">
-              <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shadow-inner">
-                <Wallet className="w-5 h-5 text-[#c19951]" />
+            <div className="flex justify-between items-start mb-3 relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center shadow-inner">
+                <Wallet className="w-4 h-4 text-[#c19951]" />
               </div>
-              <span className="text-[10px] font-bold tracking-widest text-[#c19951] uppercase mt-2">صافي الربح</span>
+              <span className="text-[10px] font-bold tracking-widest text-[#c19951] uppercase mt-1">الربح</span>
             </div>
-            <div className="text-white/80 text-sm font-medium mb-1 relative z-10">الربح التقديري</div>
-            <div className="flex items-baseline gap-1.5 mb-3 relative z-10">
-              <span className="text-4xl font-black text-white">{(totals.income - totals.expenses).toLocaleString()}</span>
+            <div className="text-white/80 text-sm font-medium mb-1 relative z-10">صافي الربح التقديري</div>
+            <div className="flex items-baseline gap-1.5 mb-2 relative z-10">
+              <span className="text-3xl font-black text-white">{(totals.income - totals.expenses).toLocaleString()}</span>
               <span className="text-xs font-bold text-[#c19951]">ر.ق</span>
             </div>
           </div>
@@ -323,7 +331,66 @@ export default function PaymentsPage() {
             <span className="text-[10px] text-white/60">يُحسب يومياً</span>
           </div>
         </div>
+      </div>
 
+      {/* Breakdown Row */}
+      <h3 className="text-sm font-bold text-gray-400 mb-3 px-2 print:hidden">تفصيل الإيرادات</h3>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+        
+        {/* CASH DEPOSITS */}
+        <div className="bg-white rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden flex flex-col justify-center border-r-[4px] border-emerald-500 print:shadow-none print:border print:border-gray-200">
+          <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-emerald-50 rounded-full opacity-50"></div>
+          <div className="flex justify-between items-center relative z-10 w-full">
+             <div>
+                <div className="text-gray-500 text-sm font-medium mb-1 relative z-10">كاش بالخزانة</div>
+                <div className="flex items-baseline gap-1.5 relative z-10">
+                  <span className="text-2xl font-black text-gray-900">{totals.cash.toLocaleString()}</span>
+                  <span className="text-xs font-bold text-emerald-600">ر.ق</span>
+                </div>
+             </div>
+             <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center shrink-0">
+                <Wallet className="w-6 h-6 text-emerald-600" />
+             </div>
+          </div>
+        </div>
+
+        {/* BANK DEPOSITS */}
+        <div className="bg-white rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden flex flex-col justify-center border-r-[4px] border-blue-500 print:shadow-none print:border print:border-gray-200">
+          <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-blue-50 rounded-full opacity-50"></div>
+          <div className="flex justify-between items-center relative z-10 w-full">
+             <div>
+                <div className="text-gray-500 text-sm font-medium mb-1 relative z-10">إيداعات بنكية (شبكة/تحويل)</div>
+                <div className="flex items-baseline gap-1.5 relative z-10">
+                  <span className="text-2xl font-black text-gray-900">{totals.bank.toLocaleString()}</span>
+                  <span className="text-xs font-bold text-blue-600">ر.ق</span>
+                </div>
+             </div>
+             <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center shrink-0">
+                <ArrowDownLeft className="w-6 h-6 text-blue-600" />
+             </div>
+          </div>
+        </div>
+
+        {/* EQUIPMENTS (UNIFORMS & BELTS) DEPOSITS */}
+        <div className="bg-white rounded-3xl p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden flex flex-col justify-between border-r-[4px] border-purple-500 print:shadow-none print:border print:border-gray-200">
+          <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-purple-50 rounded-full opacity-50"></div>
+          <div className="flex justify-between items-start relative z-10 mb-2 w-full">
+             <div>
+                <div className="text-gray-500 text-sm font-medium mb-1">ملابس وأحزمة</div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-2xl font-black text-gray-900">{totals.equipTotal.toLocaleString()}</span>
+                  <span className="text-xs font-bold text-purple-600">ر.ق</span>
+                </div>
+             </div>
+             <div className="w-10 h-10 rounded-2xl bg-purple-50 flex items-center justify-center shrink-0">
+                <Wallet className="w-5 h-5 text-purple-600" />
+             </div>
+          </div>
+          <div className="flex justify-between items-center text-xs font-bold text-gray-600 relative z-10 border-t border-gray-100 pt-2 w-full mt-1">
+            <div className="flex items-center gap-1">كاش: <span className="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">{totals.equipCash.toLocaleString()}</span></div>
+            <div className="flex items-center gap-1">بنكي: <span className="text-blue-600 bg-blue-50 px-2 py-0.5 rounded">{totals.equipBank.toLocaleString()}</span></div>
+          </div>
+        </div>
       </div>
 
       {/* Search & Actions */}
@@ -381,14 +448,15 @@ export default function PaymentsPage() {
           <button className="text-[10px] font-bold tracking-[0.15em] text-[#a0743b] uppercase print:hidden">عرض الكل</button>
         </div>
 
-        <div className="flex justify-between text-[10px] font-bold tracking-widest text-gray-400 uppercase mb-4 px-2 border-b border-gray-100 pb-3 print:border-gray-300">
-          <span>تفاصيل المعاملة</span>
-          <span>المبلغ والتاريخ</span>
+        <div className="hidden md:grid grid-cols-4 gap-4 text-[11px] font-bold tracking-widest text-gray-400 uppercase mb-4 px-4 border-b border-gray-100 pb-3 print:hidden">
+          <div className="col-span-2 text-right">المعاملة وصاحبها</div>
+          <div className="text-left">التاريخ والطريقة</div>
+          <div className="text-left pl-2">المبلغ</div>
         </div>
 
-        <div className="space-y-2 print:space-y-0">
+        <div className="space-y-3 print:space-y-0">
           {filteredPayments.length === 0 ? (
-            <div className="text-center text-gray-400 py-10 text-sm">لا توجد معاملات</div>
+            <div className="text-center text-gray-400 py-10 text-sm bg-gray-50 rounded-2xl border border-dashed border-gray-200">لا توجد معاملات مطابقة للبحث</div>
           ) : (
             filteredPayments.map((payment, idx) => {
               const isIncome = payment.category === "income";
@@ -398,24 +466,52 @@ export default function PaymentsPage() {
               const year = d.getFullYear();
 
               return (
-                <div key={payment.id} className="flex items-center justify-between p-4 hover:bg-[#F9F9FB] rounded-2xl transition-colors cursor-pointer group border border-transparent hover:border-gray-100 print:p-3 print:border-b print:border-gray-100 print:rounded-none print:break-inside-avoid" onClick={() => openEdit(payment)}>
-                  <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 shadow-sm ${isIncome ? 'bg-[#EAFBF3] text-emerald-600' : 'bg-[#FEEBEB] text-rose-600'}`}>
+                <div key={payment.id} className="flex flex-col md:grid md:grid-cols-4 gap-4 items-center p-4 bg-white hover:bg-[#FAF9F6] rounded-2xl border border-gray-100 shadow-[0_2px_8px_rgb(0,0,0,0.02)] transition-all cursor-pointer group hover:shadow-md hover:border-[#a0743b]/20 print:p-3 print:border-b print:border-gray-100 print:rounded-none print:shadow-none print:block" onClick={() => openEdit(payment)}>
+                  
+                  {/* Info: Icon, Description, Name */}
+                  <div className="flex items-center gap-4 col-span-2 w-full print:mb-2">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${isIncome ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
                       {isIncome ? <ArrowDownLeft className="w-6 h-6" /> : <ArrowUpRight className="w-6 h-6" />}
                     </div>
                     <div>
-                      <div className="font-extrabold text-gray-900 text-sm mb-1">{payment.description || (isIncome ? "إيراد عام" : "مصروف عام")}</div>
-                      <div className="text-[11px] text-gray-500 font-medium">{payment.Member?.fullNameArabic ? `العضو: ${payment.Member.fullNameArabic}` : "أخرى"}</div>
+                       <div className="font-bold text-gray-900 text-base mb-1 group-hover:text-[#5A0B1A] transition-colors">{payment.description || (isIncome ? "إيراد عام" : "مصروف عام")}</div>
+                       {payment.Member ? (
+                         <div className="flex items-center gap-2 text-sm text-gray-500 font-medium">
+                           <span className="w-2 h-2 rounded-full bg-[#c19951]"></span>
+                           {payment.Member.fullNameArabic}
+                         </div>
+                       ) : (
+                         <div className="flex items-center gap-2 text-xs text-gray-400 font-medium">
+                           <span className="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+                           معاملة عامة (بدون عضو)
+                         </div>
+                       )}
                     </div>
                   </div>
-                  <div className="flex flex-col items-end gap-1.5">
-                    <div className={`font-black text-sm pr-1 ${isIncome ? 'text-emerald-600' : 'text-gray-900'}`} dir="ltr">
-                      {isIncome ? '+' : '-'}{payment.amount} <span className="text-[10px] text-gray-400 font-bold ml-0.5">ر.ق</span>
-                    </div>
-                    <div className="text-[11px] text-gray-500 font-medium bg-gray-50 px-2.5 py-1 rounded-md border border-gray-100/50">
-                      {day} {month} {year}
-                    </div>
+
+                  {/* Date & Method */}
+                  <div className="flex flex-row md:flex-col justify-between md:justify-center items-center md:items-start w-full text-left md:pl-6 gap-2 print:mb-2 md:border-r border-gray-100 md:pr-4">
+                     <div className="text-sm font-bold text-gray-700">{day} {month} {year}</div>
+                     <div className="text-[11px] font-bold px-2.5 py-1 rounded-md bg-gray-50 text-gray-500 border border-gray-200">
+                        {payment.method === "cash" ? "نقدي (كاش)" : payment.method === "transferATM" ? "تحويل تفاعلي" : payment.method === "bankDeposit" ? "إيداع بنكي" : "عبر البطاقة (شبكة)"}
+                     </div>
                   </div>
+
+                  {/* Amount + Print */}
+                  <div className="flex justify-between md:justify-end items-center w-full gap-3 pt-3 md:pt-0 border-t md:border-none border-gray-100">
+                    <span className="md:hidden text-xs text-gray-400 font-bold uppercase">قيمة المعاملة</span>
+                    <div className={`font-black text-xl ${isIncome ? 'text-emerald-600' : 'text-gray-900'}`} dir="ltr">
+                      {isIncome ? '+' : '-'}{payment.amount} <span className="text-xs text-gray-400 font-bold ml-1">ر.ق</span>
+                    </div>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); router.push(`/admin/receipts/${payment.id}`); }}
+                      title="طباعة الإيصال"
+                      className="print:hidden w-9 h-9 rounded-xl bg-[#5A0B1A] hover:bg-[#8A1538] text-white flex items-center justify-center shrink-0 shadow-sm transition-colors"
+                    >
+                      <Printer className="w-4 h-4" />
+                    </button>
+                  </div>
+
                 </div>
               );
             })
@@ -426,13 +522,13 @@ export default function PaymentsPage() {
 
       {/* Add Payment Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => { setShowModal(false); setEditingId(null); }}>
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between p-6 border-b border-gray-100">
               <h2 className="text-xl font-bold text-gray-900">
                 {editingId ? "تعديل السجل" : modalType === "income" ? "إضافة إيراد جديد" : "إضافة مصروف جديد"}
               </h2>
-              <button onClick={() => setShowModal(false)} className="p-2 hover:bg-[#f8f5f0] rounded-xl transition-colors">
+              <button onClick={() => { setShowModal(false); setEditingId(null); }} className="p-2 hover:bg-[#f8f5f0] rounded-xl transition-colors">
                 <X className="h-5 w-5 text-gray-500" />
               </button>
             </div>
@@ -480,6 +576,14 @@ export default function PaymentsPage() {
                 </div>
               </div>
 
+              {formData.paymentType === 'subscription' && modalType === 'income' && (
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">تاريخ نهاية الاشتراك</label>
+                  <input type="date" value={formData.endOfSubscriptionDate} onChange={e => setFormData({ ...formData, endOfSubscriptionDate: e.target.value })}
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-[#7a1b32] focus:border-[#7a1b32] text-gray-900" />
+                </div>
+              )}
+
               {modalType === "income" && (
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -508,14 +612,28 @@ export default function PaymentsPage() {
               </div>
             </div>
 
-            <div className="p-6 border-t border-gray-100 flex gap-3 justify-end">
-              <button onClick={() => setShowModal(false)} className="px-5 py-2.5 border border-gray-200 rounded-xl text-gray-700 hover:bg-[#fdfaf6] transition-all font-medium">إلغاء</button>
-              <button onClick={handleSubmit} disabled={saving}
-                className="px-6 py-2.5 text-white rounded-xl transition-all duration-200 hover:shadow-lg disabled:opacity-50 font-medium flex items-center gap-2"
-                style={{ background: "linear-gradient(135deg, #7a1b32, #c0392b)" }}>
-                {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-                حفظ
-              </button>
+            <div className="p-6 border-t border-gray-100 flex justify-between items-center">
+              <div>
+                {editingId && (
+                  <button 
+                    onClick={() => handleDelete(editingId)} 
+                    className="flex items-center gap-2 px-4 py-2.5 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors font-bold text-sm"
+                    title="حذف هذا السجل"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    حذف المعاملة
+                  </button>
+                )}
+              </div>
+              <div className="flex gap-3">
+                <button onClick={() => setShowModal(false)} className="px-5 py-2.5 border border-gray-200 rounded-xl text-gray-700 hover:bg-[#fdfaf6] transition-all font-medium">إلغاء</button>
+                <button onClick={handleSubmit} disabled={saving}
+                  className="px-6 py-2.5 text-white rounded-xl transition-all duration-200 hover:shadow-lg disabled:opacity-50 font-medium flex items-center gap-2"
+                  style={{ background: "linear-gradient(135deg, #7a1b32, #c0392b)" }}>
+                  {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+                  حفظ
+                </button>
+              </div>
             </div>
           </div>
         </div>

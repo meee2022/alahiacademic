@@ -5,17 +5,17 @@ import { useParams, useRouter } from "next/navigation";
 import { insforge } from "@/lib/insforge/client";
 import { Loader2, Printer, ArrowRight } from "lucide-react";
 
-export default function ReceiptPage() {
+export default function EnrollmentReceiptPage() {
   const params = useParams();
   const router = useRouter();
-  const [payment, setPayment] = useState<any>(null);
+  const [enrollment, setEnrollment] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchReceiptData() {
       if (!params.id) return;
       
-      const { data, error } = await insforge.database.from("Payment")
+      const { data, error } = await insforge.database.from("SportsEnrollment")
         .select(`
           *,
           Member:memberId (fullNameArabic, phoneFather),
@@ -27,7 +27,7 @@ export default function ReceiptPage() {
       if (error) {
         console.error(error);
       } else {
-        setPayment(data);
+        setEnrollment(data);
       }
       setLoading(false);
     }
@@ -43,30 +43,20 @@ export default function ReceiptPage() {
     );
   }
 
-  if (!payment) {
+  if (!enrollment) {
     return (
       <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"16px",background:"#f0f2f5"}}>
-        <h2 style={{fontSize:"1.5rem",fontWeight:800,color:"#333"}}>لم يتم العثور على الإيصال</h2>
+        <h2 style={{fontSize:"1.5rem",fontWeight:800,color:"#333"}}>لم يتم العثور على السجل</h2>
         <button onClick={() => router.back()} style={{padding:"10px 24px",background:"#ddd",borderRadius:"12px",border:"none",fontWeight:700,cursor:"pointer"}}>العودة</button>
       </div>
     );
   }
 
-  const receiptNumber = payment.id?.split("-")[0].toUpperCase();
-  const dateFormatted = new Date(payment.date).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" });
-  const endDateFormatted = payment.endOfSubscriptionDate 
-    ? new Date(payment.endOfSubscriptionDate).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" })
+  const receiptNumber = enrollment.id?.split("-")[0].toUpperCase();
+  const dateFormatted = new Date(enrollment.subscriptionStart || new Date()).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" });
+  const endDateFormatted = enrollment.subscriptionEnd 
+    ? new Date(enrollment.subscriptionEnd).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" })
     : null;
-
-  const paymentTypeLabel = 
-    payment.paymentType === "subscription" ? "اشتراك تدريب" : 
-    payment.paymentType === "belt" ? "اختبار حزام" : 
-    payment.paymentType === "uniform" ? "زي رياضي" : "أخرى";
-
-  const methodLabel = 
-    payment.method === "cash" ? "نقدي (كاش)" :
-    payment.method === "transferATM" ? "تحويل بنكي" :
-    payment.method === "cardMachine" ? "شبكة / صراف" : "إيداع بنكي";
 
   return (
     <>
@@ -326,7 +316,7 @@ export default function ReceiptPage() {
           <div className="receipt-header flex justify-between items-center text-right" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', textAlign: 'right' }}>
             <div>
               <div className="academy-name">أكاديمية النادي الأهلي</div>
-              <div className="receipt-subtitle">إيصال استلام نقدية / Payment Receipt</div>
+              <div className="receipt-subtitle">بيان تسجيل اشتراك / Subscription Statement</div>
               <div className="receipt-number-badge">#{receiptNumber}</div>
             </div>
             <img src="/logo.png" alt="Logo" style={{ width: 80, height: 80, objectFit: 'contain', background: 'white', padding: 4, borderRadius: 8 }} />
@@ -337,31 +327,31 @@ export default function ReceiptPage() {
             {/* Member & Sport Info */}
             <div className="info-grid">
               <div className="info-box">
-                <div className="info-label">👤 اسم العضو</div>
-                <div className="info-value">{payment.Member?.fullNameArabic || "غير مسجل"}</div>
-                {payment.Member?.phoneFather && (
-                  <div style={{fontSize:12,color:"#999",marginTop:4,direction:"ltr"}}>{payment.Member.phoneFather}</div>
+                <div className="info-label">👤 اسم المتدرب</div>
+                <div className="info-value">{enrollment.Member?.fullNameArabic || "غير مسجل"}</div>
+                {enrollment.Member?.phoneFather && (
+                  <div style={{fontSize:12,color:"#999",marginTop:4,direction:"ltr"}}>{enrollment.Member.phoneFather}</div>
                 )}
               </div>
               <div className="info-box">
                 <div className="info-label">🏅 الرياضة</div>
-                <div className="info-value">{payment.Sport?.name || "عام"}</div>
+                <div className="info-value">{enrollment.Sport?.name || "عام"}</div>
               </div>
               <div className="info-box">
-                <div className="info-label">📅 تاريخ الدفع</div>
+                <div className="info-label">📅 تاريخ البداية</div>
                 <div className="info-value">{dateFormatted}</div>
               </div>
               <div className="info-box">
-                <div className="info-label">📋 نوع العملية</div>
-                <div className="info-value">{paymentTypeLabel}</div>
+                <div className="info-label">📋 نوع السجل</div>
+                <div className="info-value">اشتراك تدريب</div>
               </div>
             </div>
 
             {/* Amount Card */}
             <div className="amount-card">
-              <div className="amount-label">الإجمالي المدفوع</div>
+              <div className="amount-label">رسـوم الاشـتـراك</div>
               <div className="amount-value">
-                {payment.amount.toLocaleString()}
+                {Number(enrollment.monthlyFee || 0).toLocaleString()}
                 <span className="amount-currency">ريال</span>
               </div>
             </div>
@@ -369,19 +359,13 @@ export default function ReceiptPage() {
             {/* Details */}
             <div style={{marginBottom: 8}}>
               <div className="details-row">
-                <span className="detail-key">وسيلة الدفع</span>
-                <span className="detail-val">{methodLabel}</span>
+                <span className="detail-key">حالة السجل</span>
+                <span className="detail-val">{enrollment.status === "active" ? "مفعل" : "منتهي"}</span>
               </div>
               {endDateFormatted && (
                 <div className="details-row">
                   <span className="detail-key">صلاحية الاشتراك حتى</span>
                   <span className="detail-val">{endDateFormatted}</span>
-                </div>
-              )}
-              {payment.description && (
-                <div className="details-row">
-                  <span className="detail-key">ملاحظات</span>
-                  <span className="detail-val">{payment.description}</span>
                 </div>
               )}
             </div>

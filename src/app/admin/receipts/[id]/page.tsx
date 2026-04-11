@@ -37,158 +37,380 @@ export default function ReceiptPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex text-center items-center justify-center">
-        <Loader2 className="h-10 w-10 animate-spin text-[#7a1b32]" />
+      <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#f0f2f5"}}>
+        <Loader2 className="h-10 w-10 animate-spin" style={{color:"#7a1b32"}} />
       </div>
     );
   }
 
   if (!payment) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <h2 className="text-2xl font-bold text-gray-800">لم يتم العثور على الإيصال</h2>
-        <button onClick={() => router.back()} className="px-4 py-2 bg-gray-200 rounded-xl hover:bg-gray-300 font-bold">العودة</button>
+      <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"16px",background:"#f0f2f5"}}>
+        <h2 style={{fontSize:"1.5rem",fontWeight:800,color:"#333"}}>لم يتم العثور على الإيصال</h2>
+        <button onClick={() => router.back()} style={{padding:"10px 24px",background:"#ddd",borderRadius:"12px",border:"none",fontWeight:700,cursor:"pointer"}}>العودة</button>
       </div>
     );
   }
 
+  const receiptNumber = payment.id?.split("-")[0].toUpperCase();
+  const dateFormatted = new Date(payment.date || new Date()).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" });
+  const endDateFormatted = payment.endOfSubscriptionDate
+    ? new Date(payment.endOfSubscriptionDate).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" })
+    : null;
+
+  const paymentTypeLabel =
+    payment.paymentType === "subscription" ? "اشتراك تدريب" :
+    payment.paymentType === "belt" ? "اختبار حزام" :
+    payment.paymentType === "uniform" ? "زي رياضي" :
+    payment.paymentType === "registration" ? "رسوم تسجيل" : "أخرى";
+
+  const methodLabel =
+    payment.method === "cash" ? "نقدي (كاش)" :
+    payment.method === "transferATM" ? "تحويل بنكي" :
+    payment.method === "bankDeposit" ? "إيداع بنكي" :
+    payment.method === "cardMachine" ? "شبكة / صراف" : payment.method;
+
   return (
     <>
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&display=swap');
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { font-family: 'Readex Pro', sans-serif; }
+        
+        .receipt-page {
+          min-height: 100vh;
+          background: linear-gradient(135deg, #7a1b32 0%, #5c1425 50%, #3e0c17 100%);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 40px 20px;
+        }
+        
+        .controls {
+          width: 100%;
+          max-width: 600px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 32px;
+        }
+        
+        .btn-back {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 20px;
+          background: rgba(255,255,255,0.1);
+          backdrop-filter: blur(10px);
+          color: white;
+          border: 1px solid rgba(255,255,255,0.2);
+          border-radius: 12px;
+          font-weight: 700;
+          cursor: pointer;
+          font-family: inherit;
+          font-size: 14px;
+          transition: all 0.2s;
+        }
+        .btn-back:hover { background: rgba(255,255,255,0.2); }
+        
+        .btn-print {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 24px;
+          background: linear-gradient(135deg, #7a1b32, #e74c3c);
+          color: white;
+          border: none;
+          border-radius: 12px;
+          font-weight: 700;
+          cursor: pointer;
+          font-family: inherit;
+          font-size: 14px;
+          box-shadow: 0 4px 16px rgba(138,21,56,0.4);
+          transition: all 0.2s;
+        }
+        .btn-print:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(138,21,56,0.5); }
+        
+        .receipt-card {
+          width: 100%;
+          max-width: 600px;
+          background: white;
+          border-radius: 24px;
+          overflow: hidden;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .receipt-header {
+          background: linear-gradient(135deg, #7a1b32, #c0392b);
+          padding: 32px;
+          color: white;
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          text-align: right;
+        }
+        .receipt-header::after {
+          content: '';
+          position: absolute;
+          bottom: -20px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 0;
+          height: 0;
+          border-left: 24px solid transparent;
+          border-right: 24px solid transparent;
+          border-top: 20px solid #c0392b;
+        }
+        
+        .academy-name { font-size: 28px; font-weight: 800; letter-spacing: 1px; margin-bottom: 4px; }
+        .receipt-subtitle { font-size: 13px; opacity: 0.85; font-weight: 400; }
+        .receipt-number-badge {
+          display: inline-block;
+          margin-top: 12px;
+          padding: 4px 16px;
+          background: rgba(255,255,255,0.2);
+          border-radius: 20px;
+          font-size: 12px;
+          font-weight: 600;
+          letter-spacing: 1px;
+          direction: ltr;
+        }
+        
+        .receipt-body { padding: 40px 32px 32px; }
+        
+        .info-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
+          margin-bottom: 28px;
+        }
+        .info-box {
+          background: #f8f9fc;
+          border-radius: 14px;
+          padding: 16px;
+          border: 1px solid #eef1f6;
+        }
+        .info-label {
+          font-size: 11px;
+          font-weight: 700;
+          color: #8a8a9a;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          margin-bottom: 6px;
+        }
+        .info-value {
+          font-size: 16px;
+          font-weight: 700;
+          color: #7a1b32;
+        }
+        
+        .amount-card {
+          background: linear-gradient(135deg, #7a1b32, #5c1425);
+          border-radius: 18px;
+          padding: 28px;
+          text-align: center;
+          color: white;
+          margin-bottom: 24px;
+        }
+        .amount-label { font-size: 13px; opacity: 0.7; margin-bottom: 8px; }
+        .amount-value { font-size: 42px; font-weight: 800; letter-spacing: 1px; }
+        .amount-currency { font-size: 18px; font-weight: 400; opacity: 0.7; margin-right: 4px; }
+        
+        .details-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 14px 0;
+          border-bottom: 1px solid #f0f2f5;
+        }
+        .details-row:last-child { border-bottom: none; }
+        .detail-key { font-size: 14px; color: #8a8a9a; font-weight: 500; }
+        .detail-val { font-size: 14px; color: #7a1b32; font-weight: 700; }
+        
+        .receipt-footer {
+          border-top: 2px dashed #e5e7eb;
+          margin: 0 32px;
+          padding: 20px 0;
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          font-size: 12px;
+          color: #b0b0c0;
+        }
+        .signature-line {
+          width: 160px;
+          border-top: 1px solid #d0d0d0;
+          padding-top: 8px;
+          text-align: center;
+          color: #aaa;
+          font-size: 11px;
+        }
+        .footer-system { text-align: left; direction: ltr; font-size: 11px; }
+        
+        .receipt-bottom-strip {
+          height: 6px;
+          background: linear-gradient(90deg, #7a1b32, #e74c3c, #f39c12, #2ecc71, #3498db, #7a1b32);
+        }
+        
         @media print {
           @page { margin: 0; size: auto; }
-          body { 
-            -webkit-print-color-adjust: exact; 
-            print-color-adjust: exact; 
+          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          .controls { display: none !important; }
+          .receipt-page {
+            background: white !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            min-height: 100vh;
+            display: block;
           }
-          .min-h-screen { min-height: auto !important; padding: 0 !important; }
-          .max-w-2xl { max-width: 100% !important; margin: 0 !important; border: none !important; box-shadow: none !important; }
+          .receipt-card {
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            max-width: 100% !important;
+            width: 100% !important;
+            min-height: 100vh !important;
+            display: flex !important;
+            flex-direction: column !important;
+            margin: 0 !important;
+            page-break-inside: avoid;
+          }
           
-          /* Scale down to fit on one page */
-          .p-10 { padding: 20px !important; }
-          .pb-8 { padding-bottom: 16px !important; }
-          .mb-8 { margin-bottom: 16px !important; }
-          .mb-12 { margin-bottom: 24px !important; }
-          .pt-8 { padding-top: 16px !important; }
-          .gap-8 { gap: 16px !important; }
+          .receipt-header { padding: 40px !important; }
+          .academy-name { font-size: 38px !important; margin-bottom: 8px !important; }
+          .receipt-subtitle { font-size: 16px !important; }
+          .receipt-number-badge { margin-top: 16px !important; padding: 6px 20px !important; font-size: 16px !important; }
+          .receipt-header::after { bottom: -20px !important; border-top-width: 24px !important; border-left-width: 24px !important; border-right-width: 24px !important; }
           
-          h1.text-3xl { font-size: 24px !important; }
-          p.text-xl { font-size: 16px !important; }
-          td { padding-top: 12px !important; padding-bottom: 12px !important; font-size: 14px !important; }
-          th { padding-top: 8px !important; padding-bottom: 8px !important; font-size: 12px !important; }
-          .text-3xl { font-size: 24px !important; }
+          .receipt-body { 
+            padding: 40px !important; 
+            flex-grow: 1 !important; 
+            display: flex !important; 
+            flex-direction: column !important; 
+            justify-content: space-around !important; 
+          }
+          
+          .info-grid { gap: 24px !important; margin-bottom: 0 !important; }
+          .info-box { padding: 24px !important; border-radius: 16px !important; }
+          .info-label { font-size: 14px !important; margin-bottom: 8px !important; }
+          .info-value { font-size: 20px !important; }
+          
+          .amount-card { padding: 40px !important; margin-bottom: 0 !important; border-radius: 20px !important; }
+          .amount-label { font-size: 18px !important; margin-bottom: 12px !important; }
+          .amount-value { font-size: 56px !important; }
+          .amount-currency { font-size: 22px !important; }
+          
+          .details-row { padding: 16px 0 !important; }
+          .detail-key { font-size: 18px !important; }
+          .detail-val { font-size: 18px !important; }
+          
+          .receipt-footer { margin: 0 40px !important; padding: 24px 0 !important; margin-top: auto !important; }
+          .signature-line { width: 200px !important; padding-top: 8px !important; font-size: 14px !important; }
+          .footer-system { font-size: 14px !important; }
         }
       `}</style>
-      <div className="min-h-screen bg-[#f8f5f0] p-8 flex flex-col items-center">
-      {/* Print Controls - Hidden during printing */}
-      <div className="w-full max-w-2xl flex justify-between items-center mb-8 print:hidden">
-        <button 
-          onClick={() => router.back()} 
-          className="flex items-center gap-2 px-5 py-2.5 bg-white text-gray-700 rounded-xl font-bold hover:bg-[#fdfaf6] shadow-sm border border-gray-200 transition-all"
-        >
-          <ArrowRight className="h-5 w-5" />
-          رجوع
-        </button>
-        <button 
-          onClick={() => window.print()}
-          className="flex items-center gap-2 px-6 py-2.5 text-white rounded-xl font-bold shadow-md hover:-translate-y-0.5 transition-all"
-          style={{background: "linear-gradient(135deg, #7a1b32, #c0392b)"}}
-        >
-          <Printer className="h-5 w-5" />
-          طباعة الإيصال
-        </button>
-      </div>
-
-      {/* Printable Receipt Paper */}
-      <div className="w-full max-w-2xl bg-white rounded-none md:rounded-2xl shadow-xl print:shadow-none p-10 print:p-0">
-        
-        {/* Header Section */}
-        <div className="flex justify-between items-center border-b-2 border-gray-100 pb-8 mb-8">
-          <div>
-            <h1 className="text-3xl font-black text-gray-900 mb-2" style={{color: "#7a1b32"}}>أكاديمية الأبطال</h1>
-            <p className="text-gray-500 font-semibold text-sm">إيصال استلام نقدية / Payment Receipt</p>
-          </div>
-          <div className="text-left font-mono text-gray-400">
-            <p>رقم الإيصال: {payment.id?.split("-")[0].toUpperCase()}</p>
-            <p>التاريخ: {new Date(payment.date).toLocaleDateString("ar-EG")}</p>
-          </div>
+      
+      <div className="receipt-page">
+        {/* Controls - hidden when printing */}
+        <div className="controls">
+          <button className="btn-back" onClick={() => router.back()}>
+            <ArrowRight style={{width:18,height:18}} />
+            رجوع
+          </button>
+          <button className="btn-print" onClick={() => window.print()}>
+            <Printer style={{width:18,height:18}} />
+            طباعة الإيصال
+          </button>
         </div>
 
-        {/* Member & Context Info */}
-        <div className="grid grid-cols-2 gap-8 mb-8">
-          <div>
-            <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">استلمنا من السيد / Member</p>
-            <p className="text-xl font-bold text-gray-900">{payment.Member?.fullNameArabic || "غير مسجل"}</p>
-            {payment.Member?.phoneFather && <p className="text-sm text-gray-500 font-mono mt-1">{payment.Member.phoneFather}</p>}
-          </div>
-          <div>
-            <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">نوع الرياضة / Sport</p>
-            <p className="text-xl font-bold text-gray-900">{payment.Sport?.name || "عام"}</p>
-          </div>
-        </div>
-
-        {/* Invoice Table */}
-        <div className="border border-gray-200 rounded-xl overflow-hidden mb-8">
-          <table className="w-full text-right">
-            <thead className="bg-[#fdfaf6] border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-4 text-sm font-bold text-gray-600">البيان</th>
-                <th className="px-6 py-4 text-sm font-bold text-gray-600">صلاحية الاشتراك</th>
-                <th className="px-6 py-4 text-sm font-bold text-gray-600 w-32 text-left">المبلغ التدريبي</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              <tr className="bg-white">
-                <td className="px-6 py-5 text-gray-900 font-bold">
-                  {payment.paymentType === "subscription" ? "اشتراك تدريب" : 
-                   payment.paymentType === "belt" ? "اختبار حزام" : 
-                   payment.paymentType === "uniform" ? "زي رياضي" : "أخرى"}
-                </td>
-                <td className="px-6 py-5 text-gray-600">
-                  {payment.endOfSubscriptionDate ? `حتى ${new Date(payment.endOfSubscriptionDate).toLocaleDateString("ar-EG")}` : "---"}
-                </td>
-                <td className="px-6 py-5 text-gray-900 font-black text-left font-mono text-lg">
-                  {payment.amount.toLocaleString()} ريال
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        {/* Totals Section */}
-        <div className="flex justify-end mb-12">
-          <div className="w-full max-w-sm rounded-xl bg-[#fdfaf6] p-6 border border-gray-100">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-500 font-bold">الإجمالي الكلي</span>
-              <span className="text-3xl font-black text-gray-900" style={{color: "#7a1b32"}}>
-                {payment.amount.toLocaleString()} <span className="text-lg">ريال</span>
-              </span>
+        {/* Receipt Card */}
+        <div className="receipt-card">
+          {/* Header */}
+          <div className="receipt-header">
+            <div>
+              <div className="academy-name">أكاديمية النادي الأهلي</div>
+              <div className="receipt-subtitle">إيصال استلام / Payment Receipt</div>
+              <div className="receipt-number-badge">#{receiptNumber}</div>
             </div>
-            <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-200">
-              <span className="text-gray-500 font-bold text-sm">وسيلة الدفع</span>
-              <span className="text-gray-800 font-bold">
-                {payment.method === "cash" ? "كاش" :
-                 payment.method === "transferATM" ? "تحويل بنكي" :
-                 payment.method === "cardMachine" ? "شبكة / صراف" : "إيداع"}
-              </span>
+            <img src="/logo.png" alt="Logo" style={{ width: 80, height: 80, objectFit: 'contain', background: 'white', padding: 4, borderRadius: 8 }} />
+          </div>
+
+          {/* Body */}
+          <div className="receipt-body">
+            {/* Member & Sport Info */}
+            <div className="info-grid">
+              <div className="info-box">
+                <div className="info-label">👤 اسم العضو</div>
+                <div className="info-value">{payment.Member?.fullNameArabic || "غير مسجل"}</div>
+                {payment.Member?.phoneFather && (
+                  <div style={{fontSize:12,color:"#999",marginTop:4,direction:"ltr"}}>{payment.Member.phoneFather}</div>
+                )}
+              </div>
+              <div className="info-box">
+                <div className="info-label">🏅 الرياضة</div>
+                <div className="info-value">{payment.Sport?.name || "عام"}</div>
+              </div>
+              <div className="info-box">
+                <div className="info-label">📅 تاريخ الدفع</div>
+                <div className="info-value">{dateFormatted}</div>
+              </div>
+              <div className="info-box">
+                <div className="info-label">📋 نوع المعاملة</div>
+                <div className="info-value">{paymentTypeLabel}</div>
+              </div>
+            </div>
+
+            {/* Amount Card */}
+            <div className="amount-card">
+              <div className="amount-label">المبلغ المدفوع</div>
+              <div className="amount-value">
+                {Number(payment.amount || 0).toLocaleString()}
+                <span className="amount-currency">ريال</span>
+              </div>
+            </div>
+
+            {/* Details */}
+            <div style={{marginBottom: 8}}>
+              <div className="details-row">
+                <span className="detail-key">وسيلة الدفع</span>
+                <span className="detail-val">{methodLabel}</span>
+              </div>
+              <div className="details-row">
+                <span className="detail-key">نوع القيد</span>
+                <span className="detail-val">{payment.category === "income" ? "✅ إيراد" : "🔴 مصروف"}</span>
+              </div>
+              {payment.notes && (
+                <div className="details-row">
+                  <span className="detail-key">ملاحظات</span>
+                  <span className="detail-val">{payment.notes}</span>
+                </div>
+              )}
+              {endDateFormatted && (
+                <div className="details-row">
+                  <span className="detail-key">صلاحية الاشتراك حتى</span>
+                  <span className="detail-val">{endDateFormatted}</span>
+                </div>
+              )}
             </div>
           </div>
-        </div>
 
-        {/* Footer */}
-        <div className="border-t-2 border-dashed border-gray-200 pt-8 mt-auto flex justify-between items-end text-sm text-gray-400 font-semibold">
-          <div>
-            <p className="mb-1">توقيع المستلم / Receiver Signature</p>
-            <p className="text-gray-300">___________________________</p>
+          {/* Footer */}
+          <div className="receipt-footer">
+            <div>
+              <div className="signature-line">توقيع المستلم</div>
+            </div>
+            <div className="footer-system">
+              <div>Generated by system</div>
+              <div>{new Date().toLocaleDateString("ar-EG")}</div>
+            </div>
           </div>
-          <div className="text-left font-mono">
-            <p>تم الإصدار بواسطة نظام الإدارة</p>
-            <p>{new Date().toLocaleString("ar-EG")}</p>
-          </div>
+          
+          {/* Bottom colored strip */}
+          <div className="receipt-bottom-strip"></div>
         </div>
-        
       </div>
-    </div>
     </>
   );
 }

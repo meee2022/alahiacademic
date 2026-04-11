@@ -1,23 +1,52 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { RefreshCcw, X, Loader2 } from "lucide-react";
 import { renewSubscription } from "@/lib/insforge/queries";
+import { insforge } from "@/lib/insforge/client";
 import { useRouter } from "next/navigation";
 
 export function RenewSubscriptionModal({ memberId, enrollments }: { memberId: string, enrollments: any[] }) {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [coaches, setCoaches] = useState<any[]>([]);
   const router = useRouter();
 
   const activeEnrollments = enrollments.filter((e) => e.status === 'active' || e.status === 'expired');
+
+  const calculateEndDate = (enrollment: any, months: number) => {
+    if (!enrollment || !enrollment.subscriptionEnd) return new Date().toISOString().split('T')[0];
+    const currentEnd = new Date(enrollment.subscriptionEnd);
+    const newEnd = new Date(currentEnd);
+    newEnd.setMonth(newEnd.getMonth() + Number(months));
+    return newEnd.toISOString().split('T')[0];
+  };
 
   const [formData, setFormData] = useState({
     enrollmentId: activeEnrollments[0]?.id || "",
     months: 1,
     amount: activeEnrollments[0]?.monthlyFee || 0,
     paymentMethod: "cash",
+    endDate: activeEnrollments[0] ? calculateEndDate(activeEnrollments[0], 1) : "",
+    coachId: "",
   });
+
+  // Fetch all coaches when modal opens
+  useEffect(() => {
+    if (!isOpen) return;
+    async function fetchCoaches() {
+      const { data } = await insforge.database
+        .from("Coach")
+        .select("id, fullName, sportId, CoachsalaryPercentage")
+        .order("fullName");
+      setCoaches(data || []);
+    }
+    fetchCoaches();
+  }, [isOpen]);
+
+  // When enrollmentId changes, auto-reset coach selection
+  const selectedEnrollment = enrollments.find(e => e.id === formData.enrollmentId);
+  const filteredCoaches = coaches.filter(c => !c.sportId || c.sportId === selectedEnrollment?.sportId);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,17 +54,13 @@ export function RenewSubscriptionModal({ memberId, enrollments }: { memberId: st
 
     setLoading(true);
     try {
-      const selectedEnrollment = enrollments.find(e => e.id === formData.enrollmentId);
-      
-      // Calculate new end date (approximate: add specified months)
-      const currentEnd = new Date(selectedEnrollment.subscriptionEnd);
-      const newEnd = new Date(currentEnd);
-      newEnd.setMonth(newEnd.getMonth() + Number(formData.months));
+      const selectedCoach = coaches.find(c => c.id === formData.coachId);
+      const coachNote = selectedCoach ? `المدرب: ${selectedCoach.fullName}` : "";
 
       const result = await renewSubscription(
         formData.enrollmentId,
-        newEnd.toISOString().split('T')[0],
-        Number(formData.amount) / Number(formData.months), // update monthly fee if needed
+        formData.endDate,
+        Number(formData.amount) / Number(formData.months),
         {
           memberId,
           sportId: selectedEnrollment.sportId,
@@ -43,7 +68,8 @@ export function RenewSubscriptionModal({ memberId, enrollments }: { memberId: st
           date: new Date().toISOString().split('T')[0],
           method: formData.paymentMethod as "cash" | "transferATM" | "cardMachine" | "bankDeposit",
           category: 'income',
-          description: `تجديد اشتراك ${formData.months} شهر`
+          description: `تجديد اشتراك ${formData.months} شهر`,
+          notes: coachNote || null,
         }
       );
       
@@ -83,13 +109,14 @@ export function RenewSubscriptionModal({ memberId, enrollments }: { memberId: st
             </div>
             
             <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto flex-1 modal-content-safe">
+              {/* Sport Selection */}
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">الرياضة</label>
                 <select 
                   value={formData.enrollmentId}
                   onChange={(e) => {
                     const en = enrollments.find(x => x.id === e.target.value);
-                    setFormData({...formData, enrollmentId: e.target.value, amount: en?.monthlyFee || 0});
+                    setFormData({...formData, enrollmentId: e.target.value, amount: en?.monthlyFee || 0, endDate: calculateEndDate(en, formData.months), coachId: ""});
                   }}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                   required
@@ -99,7 +126,31 @@ export function RenewSubscriptionModal({ memberId, enrollments }: { memberId: st
                   ))}
                 </select>
               </div>
+
+              {/* Coach Selection */}
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  المدرب
+                  {filteredCoaches.length === 0 && coaches.length > 0 && (
+                    <span className="text-xs text-gray-400 font-normal mr-2">(لا يوجد مدربون لهذه الرياضة)</span>
+                  )}
+                </label>
+                <select
+                  value={formData.coachId}
+                  onChange={(e) => setFormData({...formData, coachId: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white"
+                >
+                  <option value="">-- اختر المدرب (اختياري) --</option>
+                  {filteredCoaches.map(coach => (
+                    <option key={coach.id} value={coach.id}>
+                      {coach.fullName}
+                      {coach.CoachsalaryPercentage ? ` — ${coach.CoachsalaryPercentage}%` : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
               
+              {/* Dates row */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">عدد الأشهر</label>
@@ -107,11 +158,29 @@ export function RenewSubscriptionModal({ memberId, enrollments }: { memberId: st
                     type="number" 
                     min="1"
                     value={formData.months}
-                    onChange={(e) => setFormData({...formData, months: Number(e.target.value)})}
+                    onChange={(e) => {
+                      const m = Number(e.target.value);
+                      const en = enrollments.find(x => x.id === formData.enrollmentId);
+                      setFormData({...formData, months: m, endDate: calculateEndDate(en, m)});
+                    }}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                     required
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">تاريخ الانتهاء</label>
+                  <input 
+                    type="date" 
+                    value={formData.endDate}
+                    onChange={(e) => setFormData({...formData, endDate: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Amount & Payment Method */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">المبلغ المدفوع (ر.ق)</label>
                   <input 
@@ -123,20 +192,38 @@ export function RenewSubscriptionModal({ memberId, enrollments }: { memberId: st
                     required
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">طريقة الدفع</label>
+                  <select 
+                    value={formData.paymentMethod}
+                    onChange={(e) => setFormData({...formData, paymentMethod: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                  >
+                    <option value="cash">نقدي (Cash)</option>
+                    <option value="cardMachine">جهاز البطاقة (Card)</option>
+                    <option value="transferATM">تحويل (Transfer)</option>
+                    <option value="bankDeposit">إيداع بنكي</option>
+                  </select>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">طريقة الدفع</label>
-                <select 
-                  value={formData.paymentMethod}
-                  onChange={(e) => setFormData({...formData, paymentMethod: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                >
-                  <option value="cash">نقدي (Cash)</option>
-                  <option value="cardMachine">جهاز البطاقة (Card)</option>
-                  <option value="transferATM">تحويل (Transfer)</option>
-                </select>
-              </div>
+              {/* Coach info badge if selected */}
+              {formData.coachId && (() => {
+                const coach = coaches.find(c => c.id === formData.coachId);
+                if (!coach) return null;
+                const percentage = coach.CoachsalaryPercentage;
+                const coachShare = percentage ? Math.round((Number(formData.amount) * percentage) / 100) : null;
+                return (
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-sm">
+                    <div className="font-bold text-amber-800 mb-1">📊 ملخص المدرب</div>
+                    <div className="text-amber-700">المدرب: <strong>{coach.fullName}</strong></div>
+                    {percentage && <div className="text-amber-700">النسبة: <strong>{percentage}%</strong></div>}
+                    {coachShare !== null && (
+                      <div className="text-amber-700">حصة المدرب: <strong>{coachShare} ر.ق</strong></div>
+                    )}
+                  </div>
+                );
+              })()}
 
               <div className="pt-4 flex flex-col sm:flex-row gap-3">
                 <button 

@@ -21,6 +21,7 @@ import {
   Package,
   Globe,
   MessageSquare,
+  DollarSign,
 } from "lucide-react";
 
 const navigation = [
@@ -33,6 +34,7 @@ const navigation = [
   { name: "الحسابات والمدفوعات", href: "/admin/payments", icon: Wallet },
   { name: "الأحزمة والاختبارات", href: "/admin/belt-tests", icon: Medal },
   { name: "المدربون والرواتب", href: "/admin/coaches", icon: Award },
+  { name: "رواتب المدربين الشهرية", href: "/admin/coach-salary", icon: DollarSign },
   { name: "حضور المدربين", href: "/admin/coach-attendance", icon: ClipboardList },
   { name: "المخزن", href: "/admin/inventory", icon: Package },
   { name: "التقارير", href: "/admin/reports", icon: FileText },
