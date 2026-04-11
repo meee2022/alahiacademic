@@ -80,16 +80,27 @@ export default function MemberDetailsPage() {
     try {
       // Exclude selectedSportId - it's a UI-only field, not a DB column
       const { selectedSportId, ...memberFields } = formData;
-      await updateMember(id, memberFields);
-      if (selectedSportId) {
-         await assignOrUpdateSport(id, selectedSportId);
+
+      // Convert empty string date fields to null to avoid Postgres type errors
+      const sanitizedFields = {
+        ...memberFields,
+        dateOfBirth: memberFields.dateOfBirth?.trim() || null,
+      };
+
+      await updateMember(id, sanitizedFields);
+
+      // Only update sport if it was actually changed
+      const originalSportId = member?.SportsEnrollment?.[0]?.sportId || "";
+      if (selectedSportId && selectedSportId !== originalSportId) {
+        await assignOrUpdateSport(id, selectedSportId);
       }
+
       const updatedData = await getMemberById(id);
       setMember(updatedData);
       setIsEditModalOpen(false);
-    } catch (err) {
-      console.error(err);
-      alert("حدث خطأ أثناء حفظ التعديلات");
+    } catch (err: any) {
+      console.error("handleSave error:", err);
+      alert("حدث خطأ أثناء حفظ التعديلات:\n" + (err?.message || JSON.stringify(err)));
     } finally {
       setSaving(false);
     }
