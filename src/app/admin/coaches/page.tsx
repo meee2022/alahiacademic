@@ -195,7 +195,7 @@ export default function CoachesPage() {
       if (!uploadData) throw new Error("لم يتم إرجاع بيانات الرفع");
       
       // Use the URL provided directly by the upload response, or fallback using the storageKey
-      const remoteUrl = uploadData.url || `https://pzqe7ma6.ap-southeast.insforge.app/storage/v1/object/public/members-docs/${uploadData.path || uploadData.key || storageKey}`;
+      const remoteUrl = uploadData.url || `https://pzqe7ma6.ap-southeast.insforge.app/storage/v1/object/public/members-docs/${uploadData.key || storageKey}`;
       console.log("Photo uploaded. Data:", uploadData, "URL:", remoteUrl);
       
       // Store remote URL in ref (NEVER loses it, immune to re-renders)
