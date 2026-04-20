@@ -10,7 +10,11 @@ export default function AttendancePage() {
   const [selectedSport, setSelectedSport] = useState("");
   const [selectedSportName, setSelectedSportName] = useState("");
   const [sports, setSports] = useState<{id: string, name: string}[]>([]);
-  const [students, setStudents] = useState<(MemberWithEnrollments & { present?: boolean })[]>([]);
+  const [students, setStudents] = useState<(MemberWithEnrollments & { 
+    present?: boolean;
+    _existingId?: string | null;
+    _originalStatus?: string | null;
+  })[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [searched, setSearched] = useState(false);
