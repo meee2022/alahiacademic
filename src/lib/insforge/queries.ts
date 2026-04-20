@@ -91,19 +91,23 @@ export async function markAttendance(memberId: string, sportId: string, date: st
   }
 }
 
-export async function getDashboardStats() {
+export async function getDashboardStats(date?: string) {
+  const targetDate = date || new Date().toISOString().split("T")[0];
+
   const [membersCount, sportsCount, paymentsSum, enrollments, sportsData, attendanceData] = await Promise.all([
     insforge.database.from("Member").select("id", { count: "exact", head: true }),
     insforge.database.from("Sport").select("id", { count: "exact", head: true }),
     insforge.database.from("Payment").select("amount, category, date"),
     insforge.database.from("SportsEnrollment").select("sportId, Sport(name)"),
     insforge.database.from("Sport").select("id, name").eq("isActive", true),
-    insforge.database.from("Attendance").select("status").eq("date", new Date().toISOString().split("T")[0])
+    insforge.database.from("Attendance").select("status").like("date", `${targetDate}%`)
   ]);
 
   const payments = paymentsSum.data || [];
-  const income = payments.filter(p => p.category === "income").reduce((acc, p) => acc + (p.amount as number), 0);
-  const expenses = payments.filter(p => p.category === "expense").reduce((acc, p) => acc + (p.amount as number), 0);
+  const targetDatePayments = payments.filter(p => (p.date || "").startsWith(targetDate));
+  
+  const income = targetDatePayments.filter(p => p.category === "income").reduce((acc, p) => acc + (p.amount as number), 0);
+  const expenses = targetDatePayments.filter(p => p.category === "expense").reduce((acc, p) => acc + (p.amount as number), 0);
 
   // Per-sport counts
   const sportCounts: Record<string, number> = {};

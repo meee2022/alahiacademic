@@ -93,14 +93,14 @@ export default function MembersPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-[#8A1538] mb-1">إدارة الأعضاء</h1>
+          <h1 className="text-3xl font-extrabold text-primary mb-1">إدارة الأعضاء</h1>
           <p className="text-sm font-medium text-gray-500">
             إجمالي {members.length} عضواً مسجلاً في الأكاديمية
           </p>
         </div>
         <button 
           onClick={() => setIsAddModalOpen(true)}
-          className="bg-[#8A1538] text-white px-6 py-3 rounded-full flex items-center gap-2 hover:bg-[#5D1026] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-bold text-sm"
+          className="bg-primary text-white px-6 py-3 rounded-full flex items-center gap-2 hover:bg-[#5D1026] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 font-bold text-sm"
         >
           <Plus className="h-5 w-5" />
           إضافة عضو جديد
@@ -114,7 +114,7 @@ export default function MembersPage() {
           <input
             type="text"
             placeholder="البحث بالاسم, الرقم الرياضي أو الرياضة..."
-            className="w-full pl-6 pr-12 py-3.5 border border-gray-200 rounded-full focus:ring-2 focus:ring-[#8A1538]/20 focus:border-[#8A1538] bg-[#F5F5F7] text-gray-900 font-medium transition-all"
+            className="w-full pl-6 pr-12 py-3.5 border border-gray-200 rounded-full focus:ring-2 focus:ring-primary/20 focus:border-primary bg-[#F5F5F7] text-gray-900 font-medium transition-all"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -124,7 +124,7 @@ export default function MembersPage() {
         <div className="flex flex-wrap items-center justify-center gap-2 mb-10">
           <button
             onClick={() => setActiveSport("الكل")}
-            className={`px-5 py-2 rounded-full text-sm font-bold transition-all ${activeSport === "الكل" ? "bg-[#C5A059] text-white shadow-md shadow-[#C5A059]/30" : "bg-[#F5F5F7] text-gray-600 hover:bg-gray-200"}`}
+            className={`px-5 py-2 rounded-full text-sm font-bold transition-all ${activeSport === "الكل" ? "bg-secondary text-white shadow-md shadow-secondary/30" : "bg-[#F5F5F7] text-gray-600 hover:bg-gray-200"}`}
           >
             الكل
           </button>
@@ -132,7 +132,7 @@ export default function MembersPage() {
             <button
               key={s.id}
               onClick={() => setActiveSport(s.name)}
-              className={`px-5 py-2 rounded-full text-sm font-bold transition-all ${activeSport === s.name ? "bg-[#C5A059] text-white shadow-md shadow-[#C5A059]/30" : "bg-[#F5F5F7] text-gray-600 hover:bg-gray-200"}`}
+              className={`px-5 py-2 rounded-full text-sm font-bold transition-all ${activeSport === s.name ? "bg-secondary text-white shadow-md shadow-secondary/30" : "bg-[#F5F5F7] text-gray-600 hover:bg-gray-200"}`}
             >
               {s.name}
             </button>
@@ -144,7 +144,7 @@ export default function MembersPage() {
           <div className="p-8 text-center text-red-500 font-bold">{error}</div>
         ) : loading ? (
           <div className="flex justify-center p-12">
-            <Loader2 className="h-10 w-10 animate-spin text-[#8A1538]" />
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
           </div>
         ) : filteredMembers.length === 0 ? (
           <div className="p-12 text-center text-gray-500 font-medium text-lg">لا يوجد نتائج تطابق بحثك</div>
@@ -157,14 +157,14 @@ export default function MembersPage() {
               const isActive = member.SportsEnrollment?.some(en => en.status === "active");
 
               return (
-                <div key={member.id} className="bg-white rounded-[20px] p-5 shadow-[0_2px_15px_rgb(0,0,0,0.04)] border border-[#8A1538]/10 flex flex-col hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:border-[#8A1538]/30 hover:-translate-y-1 transition-all duration-300">
+                <div key={member.id} className="bg-white rounded-[20px] p-5 shadow-[0_2px_15px_rgb(0,0,0,0.04)] border border-primary/10 flex flex-col hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:border-primary/30 hover:-translate-y-1 transition-all duration-300">
                   <div className="flex justify-between items-start mb-4 relative z-10 w-full">
                     <div className="flex gap-2">
-                      <Link href={`/admin/members/${member.id}/card`} className="text-gray-400 hover:text-[#8A1538] p-1.5 bg-gray-50 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-rose-100" title="طباعة بطاقة العضوية">
+                      <Link href={`/admin/members/${member.id}/card`} className="text-gray-400 hover:text-primary p-1.5 bg-gray-50 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-rose-100" title="طباعة بطاقة العضوية">
                         <Printer className="h-4 w-4" />
                       </Link>
-                      <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handlePrintReceipt(member.id); }} disabled={printingId === member.id} className="text-gray-400 hover:text-[#C5A059] p-1.5 bg-gray-50 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-amber-100 disabled:opacity-50" title="طباعة آخر إيصال">
-                        {printingId === member.id ? <Loader2 className="h-4 w-4 animate-spin text-[#C5A059]" /> : <FileText className="h-4 w-4" />}
+                      <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handlePrintReceipt(member.id); }} disabled={printingId === member.id} className="text-gray-400 hover:text-secondary p-1.5 bg-gray-50 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-amber-100 disabled:opacity-50" title="طباعة آخر إيصال">
+                        {printingId === member.id ? <Loader2 className="h-4 w-4 animate-spin text-secondary" /> : <FileText className="h-4 w-4" />}
                       </button>
                     </div>
                     <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-wide ${isActive ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-rose-50 text-rose-600 border border-rose-100"}`}>
@@ -180,10 +180,10 @@ export default function MembersPage() {
                         <Users className="h-8 w-8 text-gray-400" />
                       )}
                     </div>
-                    <h3 className="text-lg font-extrabold text-[#8A1538] leading-tight mb-1">{member.fullNameArabic}</h3>
+                    <h3 className="text-lg font-extrabold text-primary leading-tight mb-1">{member.fullNameArabic}</h3>
                     <div className="flex flex-col items-center gap-0.5">
                       <p className="text-[11px] text-gray-500 font-bold font-almarai">الرقم الشخصي: <span className="font-mono">{member.nationalId || "---"}</span></p>
-                      <p className="text-[11px] text-[#C5A059] font-black font-almarai underline decoration-[#C5A059]/30 underline-offset-2">العمر: {calculateAge(member.dateOfBirth)}</p>
+                      <p className="text-[11px] text-secondary font-black font-almarai underline decoration-secondary/30 underline-offset-2">العمر: {calculateAge(member.dateOfBirth)}</p>
                     </div>
                   </Link>
                   <div className="mt-auto pt-3 border-t border-gray-50">
@@ -192,7 +192,7 @@ export default function MembersPage() {
                         member.SportsEnrollment.map((enrollment, index) => (
                           <div key={enrollment.id || index} className={`flex flex-col flex-1 items-center text-center ${index > 0 ? 'border-r pr-2 border-gray-100' : ''} min-w-[45%]`}>
                             <span className="text-[9px] text-gray-400 font-bold tracking-wider mb-1">{enrollment.Sport?.name || "الرياضة"}</span>
-                            <span className="text-[11px] font-bold text-[#8A1538]">
+                            <span className="text-[11px] font-bold text-primary">
                               {new Date(enrollment.subscriptionEnd).toLocaleDateString('en-GB').replace(/\//g, " / ")}
                             </span>
                           </div>
@@ -209,12 +209,12 @@ export default function MembersPage() {
             {/* Add Member Card Placeholder */}
             <button 
               onClick={() => setIsAddModalOpen(true)}
-              className="bg-[#F5F5F7]/50 rounded-[20px] p-5 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center min-h-[250px] hover:border-[#8A1538] hover:bg-[#F5F5F7] transition-all group"
+              className="bg-[#F5F5F7]/50 rounded-[20px] p-5 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center min-h-[250px] hover:border-primary hover:bg-[#F5F5F7] transition-all group"
             >
               <div className="h-12 w-12 rounded-full bg-white shadow-sm flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                <Plus className="h-6 w-6 text-[#8A1538]" />
+                <Plus className="h-6 w-6 text-primary" />
               </div>
-              <span className="text-sm font-bold text-[#8A1538]">إضافة عضو</span>
+              <span className="text-sm font-bold text-primary">إضافة عضو</span>
             </button>
           </div>
         )}

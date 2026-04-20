@@ -162,10 +162,10 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Logo & Title */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-20 h-20 bg-white rounded-2xl shadow-lg flex items-center justify-center mb-4 border border-[#8A1538]/10">
+          <div className="w-20 h-20 bg-white rounded-2xl shadow-lg flex items-center justify-center mb-4 border border-primary/10">
             <img src="/logo.png" alt="Logo" className="w-14 h-14 object-contain" />
           </div>
-          <h1 className="text-2xl font-extrabold text-[#5A0B1A] text-center leading-tight">
+          <h1 className="text-2xl font-extrabold text-tertiary text-center leading-tight">
             أكاديمية النادي الأهلي
           </h1>
           <p className="text-sm text-gray-400 font-medium mt-1">لفنون الدفاع عن النفس</p>
@@ -179,7 +179,7 @@ export default function LoginPage() {
               onClick={() => { setTab("login"); setError(null); setSuccess(null); }}
               className={`flex-1 py-4 text-sm font-bold flex items-center justify-center gap-2 transition-all ${
                 tab === "login"
-                  ? "text-[#8A1538] border-b-2 border-[#8A1538] bg-[#fdfaf6]"
+                  ? "text-primary border-b-2 border-primary bg-[#fdfaf6]"
                   : "text-gray-400 hover:text-gray-600"
               }`}
             >
@@ -190,7 +190,7 @@ export default function LoginPage() {
               onClick={() => { setTab("register"); setError(null); setSuccess(null); }}
               className={`flex-1 py-4 text-sm font-bold flex items-center justify-center gap-2 transition-all ${
                 tab === "register"
-                  ? "text-[#8A1538] border-b-2 border-[#8A1538] bg-[#fdfaf6]"
+                  ? "text-primary border-b-2 border-primary bg-[#fdfaf6]"
                   : "text-gray-400 hover:text-gray-600"
               }`}
             >
@@ -227,7 +227,7 @@ export default function LoginPage() {
                     onChange={e => setEmail(e.target.value)}
                     placeholder="example@email.com"
                     dir="ltr"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#8A1538]/20 focus:border-[#8A1538] outline-none text-sm transition-all"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition-all"
                   />
                 </div>
                 <div>
@@ -243,7 +243,7 @@ export default function LoginPage() {
                       onChange={e => setPassword(e.target.value)}
                       placeholder="••••••••"
                       dir="ltr"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#8A1538]/20 focus:border-[#8A1538] outline-none text-sm transition-all pr-10"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition-all pr-10"
                     />
                     <button type="button" onClick={() => setShowPass(!showPass)} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                       {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -266,7 +266,7 @@ export default function LoginPage() {
 
                 <p className="text-center text-xs text-gray-400 mt-2">
                   ليس لديك حساب؟{" "}
-                  <button type="button" onClick={() => setTab("register")} className="text-[#8A1538] font-bold hover:underline">
+                  <button type="button" onClick={() => setTab("register")} className="text-primary font-bold hover:underline">
                     أنشئ حساباً الآن
                   </button>
                 </p>
@@ -283,7 +283,7 @@ export default function LoginPage() {
                       <span className="text-3xl">📧</span>
                     </div>
                     <p className="text-sm font-bold text-gray-700">تم إرسال رمز التحقق إلى:</p>
-                    <p className="text-sm text-[#8A1538] font-mono font-bold mt-1" dir="ltr">{otpEmail}</p>
+                    <p className="text-sm text-primary font-mono font-bold mt-1" dir="ltr">{otpEmail}</p>
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">
@@ -298,7 +298,7 @@ export default function LoginPage() {
                       onChange={e => setOtp(e.target.value.replace(/\D/g, ""))}
                       placeholder="123456"
                       dir="ltr"
-                      className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#8A1538]/20 focus:border-[#8A1538] outline-none text-center text-xl font-mono font-bold tracking-widest transition-all"
+                      className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-center text-xl font-mono font-bold tracking-widest transition-all"
                     />
                   </div>
                   <button
@@ -313,7 +313,7 @@ export default function LoginPage() {
                     <button type="button" onClick={() => { setNeedsOtp(false); setOtp(""); setError(null); setSuccess(null); }} className="text-gray-400 hover:text-gray-600">
                       ← رجوع
                     </button>
-                    <button type="button" onClick={handleResendOtp} disabled={resendLoading} className="text-[#8A1538] font-bold hover:underline disabled:opacity-50">
+                    <button type="button" onClick={handleResendOtp} disabled={resendLoading} className="text-primary font-bold hover:underline disabled:opacity-50">
                       {resendLoading ? "جاري الإرسال..." : "إعادة إرسال الرمز"}
                     </button>
                   </div>
@@ -330,7 +330,7 @@ export default function LoginPage() {
                     value={regName}
                     onChange={e => setRegName(e.target.value)}
                     placeholder="أدخل اسمك الكامل"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#8A1538]/20 focus:border-[#8A1538] outline-none text-sm transition-all"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition-all"
                   />
                 </div>
                 <div>
@@ -344,7 +344,7 @@ export default function LoginPage() {
                     onChange={e => setRegEmail(e.target.value)}
                     placeholder="example@email.com"
                     dir="ltr"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#8A1538]/20 focus:border-[#8A1538] outline-none text-sm transition-all"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition-all"
                   />
                 </div>
                 <div>
@@ -359,7 +359,7 @@ export default function LoginPage() {
                       onChange={e => setRegPassword(e.target.value)}
                       placeholder="6 أحرف على الأقل"
                       dir="ltr"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#8A1538]/20 focus:border-[#8A1538] outline-none text-sm transition-all pr-10"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition-all pr-10"
                     />
                     <button type="button" onClick={() => setShowRegPass(!showRegPass)} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                       {showRegPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -377,7 +377,7 @@ export default function LoginPage() {
                     onChange={e => setRegConfirm(e.target.value)}
                     placeholder="••••••••"
                     dir="ltr"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#8A1538]/20 focus:border-[#8A1538] outline-none text-sm transition-all"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition-all"
                   />
                 </div>
 
@@ -396,7 +396,7 @@ export default function LoginPage() {
 
                 <p className="text-center text-xs text-gray-400 mt-2">
                   لديك حساب بالفعل؟{" "}
-                  <button type="button" onClick={() => setTab("login")} className="text-[#8A1538] font-bold hover:underline">
+                  <button type="button" onClick={() => setTab("login")} className="text-primary font-bold hover:underline">
                     سجّل دخولك
                   </button>
                 </p>
@@ -408,7 +408,7 @@ export default function LoginPage() {
 
         {/* Back to site */}
         <p className="text-center mt-6 text-sm text-gray-400">
-          <a href="/" className="hover:text-[#8A1538] transition-colors font-medium">
+          <a href="/" className="hover:text-primary transition-colors font-medium">
             ← العودة إلى الموقع
           </a>
         </p>

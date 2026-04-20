@@ -42,8 +42,8 @@ const sportImages: Record<string, string> = {
 const defaultSportImage = "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&q=80&w=800";
 
 const sportGradients = [
-  "from-[#8A1538] to-[#5A0B1A]",
-  "from-[#C5A059] to-[#8B6914]",
+  "from-primary to-tertiary",
+  "from-secondary to-[#8B6914]",
   "from-[#1a365d] to-[#0d1b2a]",
   "from-[#065f46] to-[#022c22]",
   "from-[#7c3aed] to-[#4c1d95]",
@@ -56,6 +56,7 @@ export default function Home() {
   const [settings, setSettings] = useState(defaults);
   const [scrolled, setScrolled] = useState(false);
   const [isLogged, setIsLogged] = useState(false);
+  const [stats, setStats] = useState({ members: 0, coaches: 0 });
 
   const handleLogout = async () => {
     localStorage.removeItem("isAdminLogged");
@@ -87,6 +88,17 @@ export default function Home() {
     // Fetch sports
     insforge.database.from("Sport").select("id, name").eq("isActive", true).order("name").then(({ data }) => {
       if (data) setSports(data);
+    });
+
+    // Fetch stats
+    Promise.all([
+      insforge.database.from("Member").select("id", { count: "exact", head: true }),
+      insforge.database.from("Coach").select("id", { count: "exact", head: true })
+    ]).then(([membersRes, coachesRes]) => {
+      setStats({
+        members: membersRes.count || 0,
+        coaches: coachesRes.count || 0
+      });
     });
 
     // Scroll listener
@@ -203,17 +215,17 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 md:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
             <div className="text-center p-6 md:p-10 bg-surface-container-low rounded-3xl border border-white/50 transition-all hover:shadow-xl hover:-translate-y-1">
-              <div className="text-3xl md:text-5xl font-black text-primary mb-2">+500</div>
+              <div className="text-3xl md:text-5xl font-black text-primary mb-2">{stats.members > 0 ? stats.members : 0}</div>
               <div className="text-on-surface-variant font-bold uppercase tracking-widest text-[8px] md:text-xs">عضو مسجل</div>
               <div className="text-on-surface-variant/40 text-[8px] md:text-[10px] mt-1">ACTIVE MEMBERS</div>
             </div>
             <div className="text-center p-6 md:p-10 bg-surface-container-low rounded-3xl border border-white/50 transition-all hover:shadow-xl hover:-translate-y-1">
-              <div className="text-3xl md:text-5xl font-black text-secondary mb-2">+15</div>
+              <div className="text-3xl md:text-5xl font-black text-secondary mb-2">{stats.coaches > 0 ? stats.coaches : 0}</div>
               <div className="text-on-surface-variant font-bold uppercase tracking-widest text-[8px] md:text-xs">مدرب محترف</div>
               <div className="text-on-surface-variant/40 text-[8px] md:text-[10px] mt-1">PRO TRAINERS</div>
             </div>
             <div className="text-center p-6 md:p-10 bg-surface-container-low rounded-3xl border-2 border-primary/5 transition-all hover:shadow-xl hover:-translate-y-1">
-              <div className="text-3xl md:text-5xl font-black text-primary mb-2">6</div>
+              <div className="text-3xl md:text-5xl font-black text-primary mb-2">{sports.length > 0 ? sports.length : 0}</div>
               <div className="text-on-surface-variant font-bold uppercase tracking-widest text-[8px] md:text-xs">رياضات متنوعة</div>
               <div className="text-on-surface-variant/40 text-[8px] md:text-[10px] mt-1">ELITE SPORTS</div>
             </div>

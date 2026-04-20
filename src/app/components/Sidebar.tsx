@@ -53,7 +53,7 @@ export function Sidebar({ className }: { className?: string }) {
   };
 
   return (
-    <div className={cn("flex flex-col w-72 min-h-screen bg-[#8A1538] print:hidden", className)}>
+    <div className={cn("flex flex-col w-72 min-h-screen bg-primary print:hidden", className)}>
       {/* Logo / Brand Header */}
       <div className="flex items-center gap-3 px-6 py-6 border-b border-white/5">
         <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-white p-1 shrink-0 overflow-hidden">
@@ -79,20 +79,20 @@ export function Sidebar({ className }: { className?: string }) {
                 className={cn(
                   "group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200",
                   isActive
-                    ? "text-[#C5A059] bg-[#5D1026] shadow-sm"
+                    ? "text-secondary bg-[#5D1026] shadow-sm"
                     : "text-white/70 hover:text-white hover:bg-white/5"
                 )}
               >
                 <item.icon
                   className={cn(
                     "ml-3 flex-shrink-0 h-5 w-5 transition-colors duration-200",
-                    isActive ? "text-[#C5A059]" : "text-white/50 group-hover:text-white/80"
+                    isActive ? "text-secondary" : "text-white/50 group-hover:text-white/80"
                   )}
                   aria-hidden="true"
                 />
                 {item.name}
                 {isActive && (
-                  <div className="mr-auto w-1 h-5 rounded-full bg-[#C5A059]" />
+                  <div className="mr-auto w-1 h-5 rounded-full bg-secondary" />
                 )}
               </Link>
             );

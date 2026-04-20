@@ -14,6 +14,14 @@ export default function AttendancePage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [toast, setToast] = useState<{message: string, type: 'success'|'error', visible: boolean}>({message: '', type: 'success', visible: false});
+
+  const showToast = (message: string, type: 'success'|'error' = 'success') => {
+    setToast({message, type, visible: true});
+    setTimeout(() => {
+      setToast(prev => ({...prev, visible: false}));
+    }, 3000);
+  };
 
   // Report states
   const [dateFrom, setDateFrom] = useState(() => {
@@ -60,10 +68,15 @@ export default function AttendancePage() {
       console.log(`Found ${enrolled.length} members for sport ${selectedSport}`);
 
       const attendance = await getAttendanceByDateAndSport(date, selectedSport);
-      const studentList = enrolled.map((s: any) => ({
-        ...s,
-        present: attendance.some(a => a.memberId === s.id && a.status === "present")
-      }));
+      const studentList = enrolled.map((s: any) => {
+        const record = attendance.find(a => a.memberId === s.id);
+        return {
+          ...s,
+          present: record ? record.status === "present" : false,
+          _existingId: record?.id || null,
+          _originalStatus: record?.status || null
+        };
+      });
 
       setStudents(studentList);
       const sport = sports.find(s => s.id === selectedSport);
@@ -88,13 +101,45 @@ export default function AttendancePage() {
     if (!selectedSport || !date) return;
     setSaving(true);
     try {
-      await Promise.all(students.map(s =>
-        markAttendance(s.id, selectedSport, date, s.present ? "present" : "absent")
-      ));
-      alert("تم حفظ سجل الحضور بنجاح ✓");
+      const inserts: any[] = [];
+      const updates: any[] = [];
+
+      for (const s of students) {
+        const currentStatus = s.present ? "present" : "absent";
+        if (s._originalStatus !== currentStatus) {
+           if (s._existingId) {
+             updates.push({ id: s._existingId, memberId: s.id, sportId: selectedSport, date, status: currentStatus });
+           } else {
+             inserts.push({ memberId: s.id, sportId: selectedSport, date, status: currentStatus });
+           }
+        }
+      }
+
+      if (inserts.length === 0 && updates.length === 0) {
+         showToast("لم يتم إجراء أي تغييرات للحفظ", "success");
+         setSaving(false);
+         return;
+      }
+
+      if (inserts.length > 0) {
+        const { error } = await insforge.database.from("Attendance").insert(inserts);
+        if (error) throw error;
+      }
+      if (updates.length > 0) {
+        const { error } = await insforge.database.from("Attendance").upsert(updates);
+        if (error) throw error;
+      }
+      
+      // Update local state to reflect new original status so subsequent saves work without reloading
+      setStudents(prev => prev.map(s => {
+         const currentStatus = s.present ? "present" : "absent";
+         return { ...s, _originalStatus: currentStatus }; // assuming _existingId will just be an update next time
+      }));
+
+      showToast("تم حفظ سجل الحضور بنجاح");
     } catch (err) {
-      console.error(err);
-      alert("حدث خطأ أثناء الحفظ");
+      console.error("Save error:", err);
+      showToast("حدث خطأ أثناء الحفظ. يرجى المحاولة مرة أخرى.", "error");
     } finally {
       setSaving(false);
     }
@@ -142,12 +187,27 @@ export default function AttendancePage() {
   };
 
   return (
-    <div className="space-y-7">
+    <div className="space-y-7 relative">
+      {/* Toast Notification */}
+      <div 
+        className={`fixed top-6 left-1/2 -translate-x-1/2 z-[100] transition-all duration-300 transform ${
+          toast.visible ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-10 opacity-0 scale-95 pointer-events-none'
+        }`}
+      >
+        <div className={`flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border font-bold text-sm ${
+          toast.type === 'success' 
+            ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+            : 'bg-rose-50 text-rose-700 border-rose-200'
+        }`}>
+          {toast.type === 'success' ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
+          {toast.message}
+        </div>
+      </div>
 
       {/* === PAGE HEADER === */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold text-[#8A1538] flex items-center gap-3">
+          <h1 className="text-3xl font-extrabold text-primary flex items-center gap-3">
             <CalendarDays className="w-7 h-7" />
             تسجيل الحضور
           </h1>
@@ -157,7 +217,7 @@ export default function AttendancePage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="bg-[#8A1538] hover:bg-[#5A0B1A] text-white px-6 py-3 rounded-full flex items-center gap-2 font-bold transition-all shadow-lg hover:-translate-y-0.5 disabled:opacity-50"
+            className="bg-primary hover:bg-tertiary text-white px-6 py-3 rounded-full flex items-center gap-2 font-bold transition-all shadow-lg hover:-translate-y-0.5 disabled:opacity-50"
           >
             {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
             حفظ الحضور
@@ -175,7 +235,7 @@ export default function AttendancePage() {
             type="date"
             value={date}
             onChange={e => setDate(e.target.value)}
-            className="w-full text-[#5A0B1A] font-black text-lg bg-transparent border-none outline-none"
+            className="w-full text-tertiary font-black text-lg bg-transparent border-none outline-none"
           />
         </div>
 
@@ -185,7 +245,7 @@ export default function AttendancePage() {
           <select
             value={selectedSport}
             onChange={e => { setSelectedSport(e.target.value); setSelectedSportName(sports.find(s => s.id === e.target.value)?.name || ""); }}
-            className="w-full text-[#5A0B1A] font-black text-lg bg-transparent border-none outline-none"
+            className="w-full text-tertiary font-black text-lg bg-transparent border-none outline-none"
           >
             <option value="">اختر الرياضة</option>
             {sports.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -196,10 +256,10 @@ export default function AttendancePage() {
         <div className="bg-white rounded-[20px] p-5 shadow-[0_2px_15px_rgb(0,0,0,0.04)] border border-gray-100 flex items-center justify-between">
           <div>
             <div className="text-[10px] font-bold tracking-widest text-gray-400 mb-1">عدد المسجلين</div>
-            <div className="text-[#5A0B1A] font-black text-2xl">{students.length} <span className="text-lg font-bold text-gray-400">لاعباً</span></div>
+            <div className="text-tertiary font-black text-2xl">{students.length} <span className="text-lg font-bold text-gray-400">لاعباً</span></div>
           </div>
           <div className="w-14 h-14 rounded-[14px] bg-[#f5f0f2] flex items-center justify-center">
-            <Users className="w-7 h-7 text-[#8A1538]" />
+            <Users className="w-7 h-7 text-primary" />
           </div>
         </div>
       </div>
@@ -209,7 +269,7 @@ export default function AttendancePage() {
         <button
           onClick={fetchList}
           disabled={loading || !selectedSport}
-          className="w-full bg-[#8A1538] hover:bg-[#5A0B1A] text-white py-4 rounded-[16px] font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+          className="w-full bg-primary hover:bg-tertiary text-white py-4 rounded-[16px] font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50"
         >
           {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : null}
           عرض قائمة الحضور
@@ -219,7 +279,7 @@ export default function AttendancePage() {
           <button
             onClick={fetchList}
             disabled={loading}
-            className="text-[#8A1538] text-sm font-bold border border-[#8A1538]/30 hover:bg-[#8A1538]/5 rounded-full px-5 py-2 transition-all"
+            className="text-primary text-sm font-bold border border-primary/30 hover:bg-primary/5 rounded-full px-5 py-2 transition-all"
           >
             تحديث القائمة
           </button>
@@ -236,7 +296,7 @@ export default function AttendancePage() {
 
       {/* === MEMBER CARDS GRID === */}
       {loading ? (
-        <div className="flex justify-center py-16"><Loader2 className="h-10 w-10 animate-spin text-[#8A1538]" /></div>
+        <div className="flex justify-center py-16"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>
       ) : searched && students.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {students.map((student, idx) => (
@@ -248,7 +308,7 @@ export default function AttendancePage() {
                     {(student as any).photoUrl ? (
                       <img src={(student as any).photoUrl} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-2xl font-black text-[#8A1538]/30">{student.fullNameArabic.charAt(0)}</span>
+                      <span className="text-2xl font-black text-primary/30">{student.fullNameArabic.charAt(0)}</span>
                     )}
                   </div>
                   <span className={`absolute -bottom-1 -left-1 w-4 h-4 rounded-full border-2 border-white ${student.present ? 'bg-emerald-400' : 'bg-gray-300'}`} />
@@ -256,7 +316,7 @@ export default function AttendancePage() {
 
                 {/* Name & Info */}
                 <div className="flex-1 min-w-0">
-                  <div className="font-extrabold text-[#5A0B1A] text-sm leading-tight truncate">{student.fullNameArabic}</div>
+                  <div className="font-extrabold text-tertiary text-sm leading-tight truncate">{student.fullNameArabic}</div>
                   <div className="text-[10px] text-gray-400 font-bold mt-0.5">
                     {student.SportsEnrollment?.find(e => e.sportId === selectedSport)?.Sport?.name || selectedSportName} · رقم {idx + 1}
                   </div>
@@ -269,7 +329,7 @@ export default function AttendancePage() {
                   onClick={() => student.present ? toggleStatus(student.id) : null}
                   className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-[10px] text-[11px] font-black border transition-all ${
                     !student.present
-                      ? 'bg-[#8A1538] text-white border-[#8A1538] shadow-md shadow-[#8A1538]/20'
+                      ? 'bg-primary text-white border-primary shadow-md shadow-primary/20'
                       : 'bg-gray-50 text-gray-400 border-gray-200 hover:border-gray-300'
                   }`}
                 >
@@ -280,7 +340,7 @@ export default function AttendancePage() {
                   onClick={() => !student.present ? toggleStatus(student.id) : null}
                   className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-[10px] text-[11px] font-black border transition-all ${
                     student.present
-                      ? 'bg-[#C5A059] text-white border-[#C5A059] shadow-md shadow-[#C5A059]/20'
+                      ? 'bg-secondary text-white border-secondary shadow-md shadow-secondary/20'
                       : 'bg-gray-50 text-gray-400 border-gray-200 hover:border-gray-300'
                   }`}
                 >
@@ -300,13 +360,13 @@ export default function AttendancePage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
 
           {/* Performance Card */}
-          <div className="bg-[#5A0B1A] rounded-[24px] p-7 text-white relative overflow-hidden col-span-1">
+          <div className="bg-tertiary rounded-[24px] p-7 text-white relative overflow-hidden col-span-1">
             <div className="absolute -bottom-6 -right-6 text-[120px] font-black text-white/5 leading-none select-none">%</div>
             <div className="text-[10px] font-bold tracking-widest mb-4 text-white/60">نسبة الحضور</div>
             <div className="text-5xl font-black mb-5">{attendanceRate}%</div>
             <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
               <div
-                className="h-full bg-[#C5A059] rounded-full transition-all"
+                className="h-full bg-secondary rounded-full transition-all"
                 style={{ width: `${attendanceRate}%` }}
               />
             </div>
@@ -321,7 +381,7 @@ export default function AttendancePage() {
               </div>
               <div>
                 <div className="text-[10px] font-bold tracking-widest text-gray-400 mb-1">إجمالي الحضور</div>
-                <div className="text-3xl font-black text-[#5A0B1A]">{presentCount}</div>
+                <div className="text-3xl font-black text-tertiary">{presentCount}</div>
               </div>
             </div>
             <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_15px_rgb(0,0,0,0.04)] border border-gray-100 flex items-center gap-5">
@@ -330,7 +390,7 @@ export default function AttendancePage() {
               </div>
               <div>
                 <div className="text-[10px] font-bold tracking-widest text-gray-400 mb-1">إجمالي الغياب</div>
-                <div className="text-3xl font-black text-[#5A0B1A]">{absentCount}</div>
+                <div className="text-3xl font-black text-tertiary">{absentCount}</div>
               </div>
             </div>
 
@@ -347,7 +407,7 @@ export default function AttendancePage() {
                   className="border border-gray-200 rounded-lg px-2 py-1.5 text-sm font-medium text-gray-800 outline-none" />
               </div>
               <button onClick={fetchReport} disabled={reportLoading || !selectedSport}
-                className="bg-[#8A1538] text-white px-5 py-2 rounded-full text-xs font-bold hover:bg-[#5A0B1A] transition-all disabled:opacity-50 flex items-center gap-1.5">
+                className="bg-primary text-white px-5 py-2 rounded-full text-xs font-bold hover:bg-tertiary transition-all disabled:opacity-50 flex items-center gap-1.5">
                 {reportLoading && <Loader2 className="h-3 w-3 animate-spin" />}
                 <BarChart3 className="h-3.5 w-3.5" />
                 عرض تقارير الحضور
@@ -361,8 +421,8 @@ export default function AttendancePage() {
       {showReport && (
         <div className="bg-white rounded-[24px] p-6 shadow-[0_4px_20px_rgb(0,0,0,0.04)] border border-gray-100">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-[#5A0B1A] font-black text-base flex items-center gap-2.5">
-              <Trophy className="w-5 h-5 text-[#C5A059]" />
+            <h2 className="text-tertiary font-black text-base flex items-center gap-2.5">
+              <Trophy className="w-5 h-5 text-secondary" />
               سجل انضباط اللاعبين
             </h2>
             <button onClick={() => setShowReport(false)} className="p-2 text-gray-400 hover:bg-gray-100 rounded-full transition-colors">
@@ -371,7 +431,7 @@ export default function AttendancePage() {
           </div>
 
           {reportLoading ? (
-            <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-[#8A1538]" /></div>
+            <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
           ) : reportData.length === 0 ? (
             <p className="text-center text-gray-400 py-8 text-sm">لا يوجد بيانات في هذه الفترة</p>
           ) : (
@@ -381,14 +441,14 @@ export default function AttendancePage() {
                 return (
                   <div key={r.memberId} className="flex items-center gap-4 p-4 bg-[#fcfaf6] rounded-[16px] hover:bg-[#f8f5f0] transition-colors">
                     {/* Avatar */}
-                    <div className="w-10 h-10 rounded-full bg-[#f5f0f2] flex items-center justify-center shrink-0 font-black text-[#8A1538] text-sm">
+                    <div className="w-10 h-10 rounded-full bg-[#f5f0f2] flex items-center justify-center shrink-0 font-black text-primary text-sm">
                       {r.name.charAt(0)}
                     </div>
 
                     {/* Name & Team */}
                     <div className="flex-1 min-w-0">
                       <button onClick={() => openMemberDetail(r.memberId, r.name)}
-                        className="font-extrabold text-[#5A0B1A] text-sm hover:text-[#8A1538] transition-colors flex items-center gap-1.5 mb-0.5">
+                        className="font-extrabold text-tertiary text-sm hover:text-primary transition-colors flex items-center gap-1.5 mb-0.5">
                         <Eye className="w-3.5 h-3.5" />
                         {r.name}
                       </button>
@@ -403,7 +463,7 @@ export default function AttendancePage() {
                       </div>
                       <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
                         <div
-                          className={`h-full rounded-full transition-all ${rate >= 75 ? 'bg-[#C5A059]' : rate >= 50 ? 'bg-amber-400' : 'bg-[#8A1538]'}`}
+                          className={`h-full rounded-full transition-all ${rate >= 75 ? 'bg-secondary' : rate >= 50 ? 'bg-amber-400' : 'bg-primary'}`}
                           style={{ width: `${rate}%` }}
                         />
                       </div>
@@ -426,7 +486,7 @@ export default function AttendancePage() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setDetailModal(false)}>
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between p-5 border-b border-gray-100">
-              <h2 className="text-base font-black text-[#8A1538]">سجل حضور: {detailName}</h2>
+              <h2 className="text-base font-black text-primary">سجل حضور: {detailName}</h2>
               <button onClick={() => setDetailModal(false)} className="p-2 bg-gray-100 text-gray-500 rounded-full hover:bg-gray-200 transition-colors">
                 <X className="h-5 w-5" />
               </button>
@@ -436,7 +496,7 @@ export default function AttendancePage() {
             </div>
             <div className="flex-1 overflow-y-auto p-5 space-y-2 modal-content-safe">
               {detailLoading ? (
-                <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-[#8A1538]" /></div>
+                <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
               ) : detailRecords.length === 0 ? (
                 <p className="text-center text-gray-400 py-8 text-sm">لا توجد سجلات في هذه الفترة</p>
               ) : (

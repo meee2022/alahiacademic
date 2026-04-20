@@ -49,22 +49,39 @@ export default function CoachSalaryPage() {
         .select("id, fullName, phone, sportId, baseSalary, CoachsalaryPercentage, Sport(id, name)")
         .order("fullName");
 
+      // Fetch enrollments to build member->coach mapping
+      const { data: enrollmentsData } = await insforge.database
+        .from("SportsEnrollment")
+        .select("sportId, memberId, coachId")
+        .eq("status", "active");
+
+      // Build member → coach map
+      const memberCoachMap: Record<string, string> = {};
+      (enrollmentsData || []).forEach((en: any) => {
+         if (en.memberId && en.sportId && en.coachId) {
+             memberCoachMap[`${en.memberId}_${en.sportId}`] = en.coachId;
+         }
+      });
+
       // Fetch only SUBSCRIPTION income payments for selected month
       // (exclude belts, uniforms, and other types from commission calculation)
       const { data: paymentsData } = await insforge.database
         .from("Payment")
-        .select("sportId, amount, paymentType")
+        .select("sportId, amount, memberId, paymentType")
         .eq("category", "income")
         .eq("paymentType", "subscription")
         .gte("date", startDate)
         .lte("date", endDate);
 
-      // Build revenue map: sportId → total income
-      const revenueMap: Record<string, number> = {};
+      // Build revenue map: coachId → total income
+      const coachRevenueMap: Record<string, number> = {};
       let totalRev = 0;
       (paymentsData || []).forEach((p: any) => {
         if (p.sportId) {
-          revenueMap[p.sportId] = (revenueMap[p.sportId] || 0) + Number(p.amount);
+          const assignedCoachId = p.memberId ? memberCoachMap[`${p.memberId}_${p.sportId}`] : null;
+          if (assignedCoachId) {
+             coachRevenueMap[assignedCoachId] = (coachRevenueMap[assignedCoachId] || 0) + Number(p.amount);
+          }
         }
         totalRev += Number(p.amount);
       });
@@ -77,7 +94,7 @@ export default function CoachSalaryPage() {
         const sportName = coach.Sport?.name || "غير محدد";
         const baseSalary = Number(coach.baseSalary || 0);
         const percentage = Number(coach.CoachsalaryPercentage || 0);
-        const totalSportRevenue = sportId ? (revenueMap[sportId] || 0) : 0;
+        const totalSportRevenue = coachRevenueMap[coach.id] || 0;
         const commission = Math.round((totalSportRevenue * percentage) / 100);
         const finalSalary = baseSalary + commission;
         totalComm += commission;
@@ -119,12 +136,12 @@ export default function CoachSalaryPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 print:hidden">
         <div>
-          <h1 className="text-3xl font-black text-[#5A0B1A]">تقرير رواتب المدربين</h1>
+          <h1 className="text-3xl font-black text-tertiary">تقرير رواتب المدربين</h1>
           <p className="text-gray-500 text-sm font-medium mt-1">يُحسب تلقائياً بناءً على إيرادات كل رياضة</p>
         </div>
         <button
           onClick={() => window.print()}
-          className="flex items-center gap-2 px-5 py-2.5 bg-[#5A0B1A] text-white rounded-xl font-bold hover:bg-[#7a1b32] transition-colors shadow-md text-sm"
+          className="flex items-center gap-2 px-5 py-2.5 bg-tertiary text-white rounded-xl font-bold hover:bg-[#7a1b32] transition-colors shadow-md text-sm"
         >
           <Printer className="w-4 h-4" /> طباعة التقرير
         </button>
@@ -132,7 +149,7 @@ export default function CoachSalaryPage() {
 
       {/* Print Header (hidden on screen) */}
       <div className="hidden print:block text-center mb-8 border-b-2 border-gray-100 pb-4">
-        <h1 className="text-2xl font-black text-[#5A0B1A]">تقرير رواتب المدربين الشهري</h1>
+        <h1 className="text-2xl font-black text-tertiary">تقرير رواتب المدربين الشهري</h1>
         <p className="text-gray-500 font-bold text-sm mt-1">{monthNames[selectedMonth - 1]} {selectedYear}</p>
       </div>
 
@@ -141,7 +158,7 @@ export default function CoachSalaryPage() {
         <button onClick={prevMonth} className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50 shadow-sm transition-colors print:hidden">
           <ChevronRight className="w-5 h-5 text-gray-600" />
         </button>
-        <div className="bg-[#5A0B1A] text-white px-8 py-3 rounded-2xl font-black text-lg shadow-md min-w-[180px] text-center">
+        <div className="bg-tertiary text-white px-8 py-3 rounded-2xl font-black text-lg shadow-md min-w-[180px] text-center">
           {monthNames[selectedMonth - 1]} {selectedYear}
         </div>
         <button onClick={nextMonth} className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50 shadow-sm transition-colors print:hidden">
@@ -161,7 +178,7 @@ export default function CoachSalaryPage() {
           <div className="text-3xl font-black text-gray-900">{totalCommissions.toLocaleString()}</div>
           <div className="text-xs font-bold text-purple-600 mt-1">ر.ق</div>
         </div>
-        <div className="bg-[#5A0B1A] rounded-3xl p-5 shadow-xl text-white print:shadow-none">
+        <div className="bg-tertiary rounded-3xl p-5 shadow-xl text-white print:shadow-none">
           <div className="text-white/70 text-sm font-medium mb-1">عدد المدربين</div>
           <div className="text-3xl font-black">{reports.length}</div>
           <div className="text-xs font-bold text-[#c19951] mt-1">مدرب نشط</div>
@@ -171,7 +188,7 @@ export default function CoachSalaryPage() {
       {/* Main Table */}
       {loading ? (
         <div className="flex justify-center py-20">
-          <Loader2 className="w-10 h-10 animate-spin text-[#5A0B1A]" />
+          <Loader2 className="w-10 h-10 animate-spin text-tertiary" />
         </div>
       ) : reports.length === 0 ? (
         <div className="text-center text-gray-400 py-16 bg-white rounded-3xl shadow-sm border border-dashed border-gray-200 text-sm font-bold">
@@ -183,11 +200,11 @@ export default function CoachSalaryPage() {
           <div className="grid grid-cols-7 gap-2 px-6 py-4 bg-[#fdfaf6] border-b border-gray-100 text-[11px] font-black text-gray-400 uppercase tracking-widest text-center print:bg-gray-50">
             <div className="text-right">المدرب</div>
             <div>الرياضة</div>
-            <div>إيرادات الرياضة</div>
+            <div>إيرادات المدرب من الاشتراكات</div>
             <div>النسبة %</div>
             <div>العمولة</div>
             <div>الراتب الأساسي</div>
-            <div className="text-[#5A0B1A]">الراتب النهائي</div>
+            <div className="text-tertiary">الراتب النهائي</div>
           </div>
 
           {/* Table Rows */}
@@ -204,7 +221,7 @@ export default function CoachSalaryPage() {
 
               {/* Sport */}
               <div>
-                <span className="inline-block bg-[#fcecc2] text-[#8A1538] text-xs font-bold px-2.5 py-1 rounded-full">
+                <span className="inline-block bg-[#fcecc2] text-primary text-xs font-bold px-2.5 py-1 rounded-full">
                   {r.sportName}
                 </span>
               </div>
@@ -245,7 +262,7 @@ export default function CoachSalaryPage() {
 
               {/* Final Salary */}
               <div>
-                <div className={`inline-block px-4 py-2 rounded-xl font-black text-sm ${r.finalSalary > 0 ? "bg-[#5A0B1A] text-white shadow-sm" : "bg-gray-100 text-gray-500"}`}>
+                <div className={`inline-block px-4 py-2 rounded-xl font-black text-sm ${r.finalSalary > 0 ? "bg-tertiary text-white shadow-sm" : "bg-gray-100 text-gray-500"}`}>
                   {r.finalSalary.toLocaleString()} ر.ق
                 </div>
               </div>
@@ -260,7 +277,7 @@ export default function CoachSalaryPage() {
             <div></div>
             <div className="text-sm text-emerald-600">{totalCommissions.toLocaleString()} ر.ق</div>
             <div className="text-sm text-gray-700">{reports.reduce((a, r) => a + r.baseSalary, 0).toLocaleString()} ر.ق</div>
-            <div className="text-[#5A0B1A] text-sm">{reports.reduce((a, r) => a + r.finalSalary, 0).toLocaleString()} ر.ق</div>
+            <div className="text-tertiary text-sm">{reports.reduce((a, r) => a + r.finalSalary, 0).toLocaleString()} ر.ق</div>
           </div>
         </div>
       )}

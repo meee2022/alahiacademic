@@ -192,9 +192,9 @@ export default function UsersPage() {
 
         {/* Section: SystemUsers with roles */}
         <div className="px-6 py-4 border-b border-gray-100 bg-[#fdfaf6] flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4 text-[#8A1538]" />
-          <span className="font-bold text-sm text-[#8A1538]">الحسابات ذات الصلاحيات الإدارية</span>
-          <span className="mr-auto bg-[#8A1538]/10 text-[#8A1538] text-xs font-bold px-2 py-0.5 rounded-full">{systemUsers.length}</span>
+          <ShieldCheck className="w-4 h-4 text-primary" />
+          <span className="font-bold text-sm text-primary">الحسابات ذات الصلاحيات الإدارية</span>
+          <span className="mr-auto bg-primary/10 text-primary text-xs font-bold px-2 py-0.5 rounded-full">{systemUsers.length}</span>
         </div>
 
         <div className="overflow-x-auto">
@@ -210,7 +210,7 @@ export default function UsersPage() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {loading ? (
-                <tr><td colSpan={5} className="py-10 text-center"><Loader2 className="h-7 w-7 animate-spin mx-auto text-[#8A1538]" /></td></tr>
+                <tr><td colSpan={5} className="py-10 text-center"><Loader2 className="h-7 w-7 animate-spin mx-auto text-primary" /></td></tr>
               ) : systemUsers.length === 0 ? (
                 <tr><td colSpan={5} className="py-8 text-center text-gray-400 text-sm">لا يوجد مستخدمون إداريون حتى الآن</td></tr>
               ) : (

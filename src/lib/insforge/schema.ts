@@ -57,6 +57,7 @@ export interface Database {
           status: "active" | "expired" | "frozen" | "cancelled";
           timeSlot: string | null;
           notes: string | null;
+          coachId: string | null;
         };
         Insert: Omit<Database["public"]["Tables"]["SportsEnrollment"]["Row"], "id"> & { id?: string };
         Update: Partial<Database["public"]["Tables"]["SportsEnrollment"]["Insert"]>;

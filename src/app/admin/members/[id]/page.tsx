@@ -152,8 +152,8 @@ export default function MemberDetailsPage() {
     }
   };
 
-  if (loading) return <div className="flex h-screen items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-[#8A1538]" /></div>;
-  if (!member) return <div className="text-center mt-20 text-[#8A1538] font-bold">لم يتم العثور على بيانات العضو</div>;
+  if (loading) return <div className="flex h-screen items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>;
+  if (!member) return <div className="text-center mt-20 text-primary font-bold">لم يتم العثور على بيانات العضو</div>;
 
   // Mocked/Computed metrics
   const joinedDate = new Date(member.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
@@ -190,14 +190,14 @@ export default function MemberDetailsPage() {
       
       {/* Header Bar */}
       <div className="flex justify-between items-center mb-6">
-        <button onClick={() => router.push('/admin/members')} className="p-2 text-[#8A1538] hover:bg-white/50 rounded-full transition-colors flex items-center justify-center">
+        <button onClick={() => router.push('/admin/members')} className="p-2 text-primary hover:bg-white/50 rounded-full transition-colors flex items-center justify-center">
           <ArrowRight className="w-6 h-6" />
         </button>
-        <h1 className="text-[#5A0B1A] font-extrabold text-[15px] tracking-wide font-almarai">
+        <h1 className="text-tertiary font-extrabold text-[15px] tracking-wide font-almarai">
           الملف الشخصي
         </h1>
         <div className="flex items-center gap-2">
-          <button onClick={() => setIsEditModalOpen(true)} className="p-2 text-[#8A1538] hover:bg-white/50 rounded-full transition-colors flex items-center justify-center" title="تعديل">
+          <button onClick={() => setIsEditModalOpen(true)} className="p-2 text-primary hover:bg-white/50 rounded-full transition-colors flex items-center justify-center" title="تعديل">
             <Edit className="w-5 h-5" />
           </button>
           <button onClick={handleDeleteMember} disabled={saving} className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors flex items-center justify-center" title="حذف العضو">
@@ -212,7 +212,7 @@ export default function MemberDetailsPage() {
         <div className="lg:col-span-8 space-y-8">
           
           {/* Main Profile Card */}
-          <div className="bg-white rounded-[24px] pt-14 pb-8 px-6 relative shadow-[0_8px_30px_rgb(0,0,0,0.04)] mt-12 flex flex-col items-center border border-[#8A1538]/10 hover:border-[#8A1538]/30 transition-all">
+          <div className="bg-white rounded-[24px] pt-14 pb-8 px-6 relative shadow-[0_8px_30px_rgb(0,0,0,0.04)] mt-12 flex flex-col items-center border border-primary/10 hover:border-primary/30 transition-all">
             {/* Floating Avatar */}
             <div className="absolute -top-[52px] left-1/2 -translate-x-1/2 rounded-[20px] overflow-hidden border-4 border-[#F5F5F7] shadow-lg bg-gray-50 h-[104px] w-[104px] flex items-center justify-center">
               {(formData.photoUrl || member?.photoUrl) ? (
@@ -222,7 +222,7 @@ export default function MemberDetailsPage() {
               )}
             </div>
 
-            <h2 className="text-[#5A0B1A] text-2xl font-black text-center mb-2 leading-tight font-almarai">
+            <h2 className="text-tertiary text-2xl font-black text-center mb-2 leading-tight font-almarai">
               {member.fullNameArabic || member.fullNameEnglish}
             </h2>
             
@@ -230,11 +230,11 @@ export default function MemberDetailsPage() {
               عضو نشط
             </div>
 
-            <div className="text-[#5A0B1A] font-bold text-[13px] mb-4 flex items-center gap-2">
+            <div className="text-tertiary font-bold text-[13px] mb-4 flex items-center gap-2">
               رقم العضوية: <span className="font-extrabold" dir="ltr">{membershipNumber ? `10${membershipNumber}` : "...."}</span>
               <button 
                 onClick={() => router.push(`/admin/members/${id}/card`)}
-                className="p-1.5 bg-[#8A1538]/5 text-[#8A1538] rounded-md hover:bg-[#8A1538]/10 transition-colors"
+                className="p-1.5 bg-primary/5 text-primary rounded-md hover:bg-primary/10 transition-colors"
                 title="عرض بطاقة العضوية"
               >
                 <Printer className="w-3.5 h-3.5" />
@@ -243,7 +243,7 @@ export default function MemberDetailsPage() {
 
             <div className="flex gap-3 w-full justify-center">
               <div className="bg-[#f5f5f7] px-3 py-2 rounded-xl text-[11px] font-bold text-gray-700 flex items-center gap-1.5">
-                <span className="text-[#8A1538]">📅</span>
+                <span className="text-primary">📅</span>
                 انضم في {joinedDate}
               </div>
               <div className="bg-[#f5f5f7] px-3 py-2 rounded-xl text-[11px] font-bold text-gray-700 flex items-center gap-1.5">
@@ -254,7 +254,7 @@ export default function MemberDetailsPage() {
           </div>
 
           {/* Performance Score Card */}
-          <div className="bg-[#5A0B1A] rounded-[24px] p-7 text-white relative overflow-hidden shadow-lg border border-[#8A1538]/20">
+          <div className="bg-tertiary rounded-[24px] p-7 text-white relative overflow-hidden shadow-lg border border-primary/20">
             <div className="absolute -bottom-8 -right-8 opacity-10">
               <Award className="w-56 h-56" />
             </div>
@@ -288,20 +288,20 @@ export default function MemberDetailsPage() {
           </div>
 
           {/* Active Programs */}
-          <div className="bg-white rounded-[24px] shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-[#8A1538]/10 px-6 py-7">
-            <h3 className="text-[#5A0B1A] font-black text-[13px] mb-6 flex items-center gap-2.5">
-              <Activity className="w-4 h-4 text-[#8A1538]" />
+          <div className="bg-white rounded-[24px] shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-primary/10 px-6 py-7">
+            <h3 className="text-tertiary font-black text-[13px] mb-6 flex items-center gap-2.5">
+              <Activity className="w-4 h-4 text-primary" />
               البرامج النشطة
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
               {member.SportsEnrollment?.map((en:any) => (
-                <div key={en.id} className="bg-[#fcfaf6] rounded-[16px] p-4 flex items-center justify-between hover:bg-[#f8f5f0] transition-colors border border-transparent hover:border-[#8A1538]/10 cursor-pointer">
+                <div key={en.id} className="bg-[#fcfaf6] rounded-[16px] p-4 flex items-center justify-between hover:bg-[#f8f5f0] transition-colors border border-transparent hover:border-primary/10 cursor-pointer">
                   <div className="flex items-center gap-4">
                     <div className="w-11 h-11 rounded-full bg-[#f4ecee] flex items-center justify-center shrink-0">
                       <span className="text-lg">🥋</span>
                     </div>
                     <div>
-                      <div className="font-black text-[#5A0B1A] text-sm mb-0.5">{en.Sport?.name}</div>
+                      <div className="font-black text-tertiary text-sm mb-0.5">{en.Sport?.name}</div>
                       <div className="text-[10px] text-gray-400 font-bold">أساسي</div>
                     </div>
                   </div>
@@ -314,7 +314,7 @@ export default function MemberDetailsPage() {
                 </div>
               )}
             </div>
-            <button className="w-full border-2 border-dashed border-[#eadbdf] text-[#a39498] rounded-[16px] py-4 flex items-center justify-center gap-2 font-bold hover:bg-[#fcfaf6] hover:text-[#8A1538] hover:border-[#8A1538]/30 transition-all text-[11px] tracking-widest">
+            <button className="w-full border-2 border-dashed border-[#eadbdf] text-[#a39498] rounded-[16px] py-4 flex items-center justify-center gap-2 font-bold hover:bg-[#fcfaf6] hover:text-primary hover:border-primary/30 transition-all text-[11px] tracking-widest">
               <Plus className="w-3 h-3" />
               التسجيل في رياضة جديدة
             </button>
@@ -325,52 +325,52 @@ export default function MemberDetailsPage() {
         <div className="lg:col-span-4 space-y-8">
           
           {/* Contact Information */}
-          <div className="bg-white rounded-[24px] shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-[#8A1538]/10 px-6 py-7">
-            <h3 className="text-[#5A0B1A] font-black text-[13px] mb-6 flex items-center gap-2.5">
-              <UserCircle className="w-4 h-4 text-[#8A1538]" />
+          <div className="bg-white rounded-[24px] shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-primary/10 px-6 py-7">
+            <h3 className="text-tertiary font-black text-[13px] mb-6 flex items-center gap-2.5">
+              <UserCircle className="w-4 h-4 text-primary" />
               بيانات التواصل
             </h3>
             <div className="space-y-6">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-xl bg-[#fcfaf6] flex items-center justify-center shrink-0">
-                  <Phone className="w-4 h-4 text-[#8A1538]" />
+                  <Phone className="w-4 h-4 text-primary" />
                 </div>
                 <div>
                   <div className="text-[9px] font-bold tracking-widest text-[#a39498] mb-0.5 uppercase">رقم الهاتف</div>
-                  <div className="font-bold text-[#5A0B1A] text-sm" dir="ltr">{member.phoneFather || member.phoneMother || "لا يوجد رقم"}</div>
+                  <div className="font-bold text-tertiary text-sm" dir="ltr">{member.phoneFather || member.phoneMother || "لا يوجد رقم"}</div>
                 </div>
               </div>
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-xl bg-[#fcfaf6] flex items-center justify-center shrink-0">
-                  <Mail className="w-4 h-4 text-[#8A1538]" />
+                  <Mail className="w-4 h-4 text-primary" />
                 </div>
                 <div>
                   <div className="text-[9px] font-bold tracking-widest text-[#a39498] mb-0.5 uppercase">البريد الإلكتروني</div>
-                  <div className="font-bold text-[#5A0B1A] text-sm" dir="ltr">{member.nationalId ? `member.${member.nationalId.substring(0,4)}@example.qa` : "لا يوجد بريد"}</div>
+                  <div className="font-bold text-tertiary text-sm" dir="ltr">{member.nationalId ? `member.${member.nationalId.substring(0,4)}@example.qa` : "لا يوجد بريد"}</div>
                 </div>
               </div>
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-xl bg-[#fcfaf6] flex items-center justify-center shrink-0">
-                  <MapPin className="w-4 h-4 text-[#8A1538]" />
+                  <MapPin className="w-4 h-4 text-primary" />
                 </div>
                 <div>
                   <div className="text-[9px] font-bold tracking-widest text-[#a39498] mb-0.5 uppercase">مكان الإقامة</div>
-                  <div className="font-bold text-[#5A0B1A] text-sm">{member.notes ? member.notes.substring(0, 30) : "الدوحة، قطر"}</div>
+                  <div className="font-bold text-tertiary text-sm">{member.notes ? member.notes.substring(0, 30) : "الدوحة، قطر"}</div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Subscription Details */}
-          <div className="bg-white rounded-[24px] shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-[#8A1538]/10 px-6 py-7">
-            <h3 className="text-[#5A0B1A] font-black text-[13px] mb-6 flex items-center gap-2.5">
-              <CreditCard className="w-4 h-4 text-[#8A1538]" />
+          <div className="bg-white rounded-[24px] shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-primary/10 px-6 py-7">
+            <h3 className="text-tertiary font-black text-[13px] mb-6 flex items-center gap-2.5">
+              <CreditCard className="w-4 h-4 text-primary" />
               تفاصيل الاشتراك
             </h3>
             <div className="bg-[#fcfaf6] rounded-[16px] p-5 mb-5 box-border w-full">
               <div className="text-[9px] font-bold tracking-widest text-[#a39498] mb-1.5 uppercase">الخطة الحالية</div>
               <div className="flex justify-between items-center w-full">
-                <div className="text-[#5A0B1A] font-black text-lg truncate max-w-[70%]">{primarySportName}</div>
+                <div className="text-tertiary font-black text-lg truncate max-w-[70%]">{primarySportName}</div>
                 <div className="text-[#bc8c20] text-[10px] font-black tracking-widest bg-[#fcecc2] px-3 py-1 rounded-full">ذهبي</div>
               </div>
             </div>
@@ -391,7 +391,7 @@ export default function MemberDetailsPage() {
           </div>
 
           {/* Attachments Section */}
-          <div className="bg-white rounded-[24px] shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-[#8A1538]/10 overflow-hidden">
+          <div className="bg-white rounded-[24px] shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-primary/10 overflow-hidden">
             <MemberAttachments memberId={member.id} />
           </div>
         </div>
@@ -407,7 +407,7 @@ export default function MemberDetailsPage() {
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] flex flex-col">
             <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-[#fcfaf6]">
-               <h3 className="text-lg font-bold text-[#8A1538]">تعديل بيانات العضو</h3>
+               <h3 className="text-lg font-bold text-primary">تعديل بيانات العضو</h3>
                <button onClick={() => setIsEditModalOpen(false)} className="bg-gray-100 p-2 text-gray-500 rounded-full hover:bg-gray-200 transition-colors">
                  <X className="h-5 w-5" />
                </button>
@@ -415,7 +415,7 @@ export default function MemberDetailsPage() {
             <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-5">
               
                <div className="flex items-center gap-4 pb-4 border-b border-gray-100">
-                <div className="relative group w-16 h-16 rounded-full overflow-hidden bg-gray-100 border border-[#8A1538]/30 shadow-inner shrink-0 leading-none">
+                <div className="relative group w-16 h-16 rounded-full overflow-hidden bg-gray-100 border border-primary/30 shadow-inner shrink-0 leading-none">
                   {(formData.photoUrl || member?.photoUrl) ? (
                     <img src={formData.photoUrl || member?.photoUrl} alt="Preview" className="w-full h-full object-cover" />
                   ) : (
@@ -425,7 +425,7 @@ export default function MemberDetailsPage() {
                       <UploadCloud className="w-5 h-5 text-white" />
                       <input type="file" className="hidden" accept="image/*" onChange={handlePhotoUpload} disabled={uploadingPhoto} />
                     </label>
-                    {uploadingPhoto && <div className="absolute inset-0 bg-white/80 flex items-center justify-center"><Loader2 className="w-5 h-5 animate-spin text-[#8A1538]" /></div>}
+                    {uploadingPhoto && <div className="absolute inset-0 bg-white/80 flex items-center justify-center"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>}
                   </div>
                   <div className="text-sm text-gray-500 font-medium">اضغط على الصورة لتعديلها</div>
                </div>
@@ -434,24 +434,24 @@ export default function MemberDetailsPage() {
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase">الاسم بالعربية</label>
                     <input type="text" value={formData.fullNameArabic} onChange={e => setFormData({...formData, fullNameArabic: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#8A1538]/20 focus:border-[#8A1538] outline-none" required />
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" required />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase">الاسم بالإنجليزية</label>
                     <input type="text" value={formData.fullNameEnglish} onChange={e => setFormData({...formData, fullNameEnglish: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#8A1538]/20 focus:border-[#8A1538] outline-none text-left min-w-0" dir="ltr" />
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-left min-w-0" dir="ltr" />
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase">هاتف الأب</label>
                       <input type="tel" value={formData.phoneFather} onChange={e => setFormData({...formData, phoneFather: e.target.value})}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#8A1538]/20 focus:border-[#8A1538] outline-none text-left min-w-0" dir="ltr" />
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-left min-w-0" dir="ltr" />
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase">هاتف الأم</label>
                       <input type="tel" value={formData.phoneMother} onChange={e => setFormData({...formData, phoneMother: e.target.value})}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#8A1538]/20 focus:border-[#8A1538] outline-none text-left min-w-0" dir="ltr" />
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-left min-w-0" dir="ltr" />
                     </div>
                   </div>
 
@@ -459,19 +459,19 @@ export default function MemberDetailsPage() {
                     <div>
                       <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase">تاريخ الميلاد</label>
                       <input type="date" value={formData.dateOfBirth} onChange={e => setFormData({...formData, dateOfBirth: e.target.value})}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#8A1538]/20 focus:border-[#8A1538] outline-none" />
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" />
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase">الرقم الشخصي / ID</label>
                       <input type="text" value={formData.nationalId} onChange={e => setFormData({...formData, nationalId: e.target.value})}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#8A1538]/20 focus:border-[#8A1538] outline-none text-left min-w-0" dir="ltr" />
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-left min-w-0" dir="ltr" />
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase">الرياضة الأساسية</label>
                     <select value={formData.selectedSportId} onChange={e => setFormData({...formData, selectedSportId: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#8A1538]/20 focus:border-[#8A1538] outline-none bg-white">
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white">
                       <option value="">-- اختر نوع الرياضة --</option>
                       {sports.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                     </select>
@@ -480,13 +480,13 @@ export default function MemberDetailsPage() {
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase">ملاحظات / سكن</label>
                     <textarea value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} rows={2}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#8A1538]/20 focus:border-[#8A1538] outline-none resize-none" placeholder="اكتب ملاحظات طبية أو معلومات عن السكن..." />
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none" placeholder="اكتب ملاحظات طبية أو معلومات عن السكن..." />
                   </div>
                </div>
             </div>
             
             <div className="p-5 border-t border-gray-100 bg-[#fdfaf6] flex gap-3">
-               <button onClick={handleSave} disabled={saving} className="flex-1 bg-[#8A1538] hover:bg-[#5A0B1A] text-white py-3.5 rounded-xl font-bold transition-all shadow-md flex justify-center items-center gap-2">
+               <button onClick={handleSave} disabled={saving} className="flex-1 bg-primary hover:bg-tertiary text-white py-3.5 rounded-xl font-bold transition-all shadow-md flex justify-center items-center gap-2">
                  {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
                  حفظ التغييرات
                </button>

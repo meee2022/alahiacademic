@@ -13,6 +13,8 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-sans",
 });
 
+import ThemeApplier from "./components/ThemeApplier";
+
 export const metadata: Metadata = {
   title: "أكاديمية النادي الأهلي لفنون الدفاع عن النفس",
   description: "نظام إدارة أكاديمية النادي الأهلي لفنون الدفاع عن النفس",
@@ -30,6 +32,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       </head>
       <body className={`${almarai.variable} ${plusJakartaSans.variable} antialiased`}>
+        <ThemeApplier />
         {children}
       </body>
     </html>

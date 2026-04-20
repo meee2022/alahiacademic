@@ -52,20 +52,36 @@ export default function SettingsPage() {
           throw new Error("لم يتم إرجاع رابط الصورة بعد الرفع");
       }
 
+      // Load overall current storage to avoid overwriting other tabs
+      const currentStorage = JSON.parse(localStorage.getItem("academy_settings") || "{}");
+      const currentAcademy = currentStorage.academy || academy;
+
       if (sportName) {
-        setAcademy({
-          ...academy,
+        const newAcademy = {
+          ...currentAcademy,
           sportImages: {
-            ...(academy.sportImages || {}),
+            ...(currentAcademy.sportImages || {}),
             [sportName]: publicUrl
           }
-        });
+        };
+        setAcademy(newAcademy);
+        currentStorage.academy = newAcademy;
       } else {
-        setAcademy({
-          ...academy,
+        const newAcademy = {
+          ...currentAcademy,
           [fieldName]: publicUrl
-        });
+        };
+        setAcademy(newAcademy);
+        currentStorage.academy = newAcademy;
       }
+      
+      // Auto-save to local storage so uploads aren't lost if user glides away
+      localStorage.setItem("academy_settings", JSON.stringify(currentStorage));
+      window.dispatchEvent(new Event("theme-changed"));
+      
+      // Show mini notification (optional, but good UX)
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
     } catch (err: any) {
       console.error('Error uploading image:', err.message);
       alert('فشل رفع الصورة. تأكد من إنشاء مساحة التخزين "public-assets" في لوحة التحكم.');
@@ -150,6 +166,9 @@ export default function SettingsPage() {
       const settings = { profile, academy, appearance, notifications };
       localStorage.setItem("academy_settings", JSON.stringify(settings));
       
+      // Dispatch custom event to update theme immediately
+      window.dispatchEvent(new Event("theme-changed"));
+      
       // Show success
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
@@ -205,7 +224,7 @@ export default function SettingsPage() {
     <div className="space-y-6 pb-20 max-w-6xl mx-auto">
       
       {/* Header */}
-      <div className="bg-[#5A0B1A] rounded-[28px] p-8 text-white relative overflow-hidden shadow-xl">
+      <div className="bg-tertiary rounded-[28px] p-8 text-white relative overflow-hidden shadow-xl">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
         <div className="relative z-10 flex items-center justify-between">
           <div>
@@ -214,7 +233,7 @@ export default function SettingsPage() {
             <p className="text-white/60 text-sm font-medium mt-1">إعدادات النظام والتخصيص والأمان</p>
           </div>
           <div className="w-16 h-16 rounded-[20px] bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
-            <Settings className="w-8 h-8 text-[#C5A059]" />
+            <Settings className="w-8 h-8 text-secondary" />
           </div>
         </div>
       </div>
@@ -227,8 +246,8 @@ export default function SettingsPage() {
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-3 px-5 py-3.5 rounded-[18px] text-sm font-bold whitespace-nowrap transition-all ${
               activeTab === tab.id 
-                ? 'bg-[#5A0B1A] text-white shadow-lg shadow-[#5A0B1A]/20' 
-                : 'text-gray-500 hover:text-[#5A0B1A] hover:bg-gray-50'
+                ? 'bg-tertiary text-white shadow-lg shadow-tertiary/20' 
+                : 'text-gray-500 hover:text-tertiary hover:bg-gray-50'
             }`}
           >
             <tab.icon className="w-4 h-4" />
@@ -244,12 +263,12 @@ export default function SettingsPage() {
         {activeTab === "profile" && (
           <div className="p-8 space-y-8">
             <div className="flex items-center gap-4 pb-6 border-b border-gray-100">
-              <div className="w-20 h-20 rounded-[22px] bg-gradient-to-br from-[#8A1538] to-[#5A0B1A] flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-[#8A1538]/20">
+              <div className="w-20 h-20 rounded-[22px] bg-gradient-to-br from-primary to-tertiary flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-primary/20">
                 {profile.name.charAt(0)}
               </div>
               <div>
-                <h2 className="text-xl font-black text-[#5A0B1A]">{profile.name}</h2>
-                <span className="inline-block mt-1 bg-[#C5A059]/10 text-[#C5A059] px-3 py-1 rounded-full text-xs font-bold">{profile.role}</span>
+                <h2 className="text-xl font-black text-tertiary">{profile.name}</h2>
+                <span className="inline-block mt-1 bg-secondary/10 text-secondary px-3 py-1 rounded-full text-xs font-bold">{profile.role}</span>
               </div>
             </div>
 
@@ -261,7 +280,7 @@ export default function SettingsPage() {
                   <input 
                     type="text" value={profile.name} 
                     onChange={e => setProfile({...profile, name: e.target.value})}
-                    className="w-full bg-[#F5F5F7] rounded-2xl px-5 pr-12 py-3.5 text-sm font-bold text-[#5A0B1A] focus:bg-white focus:ring-2 focus:ring-[#8A1538]/10 border border-transparent focus:border-[#8A1538]/20 outline-none transition-all"
+                    className="w-full bg-[#F5F5F7] rounded-2xl px-5 pr-12 py-3.5 text-sm font-bold text-tertiary focus:bg-white focus:ring-2 focus:ring-primary/10 border border-transparent focus:border-primary/20 outline-none transition-all"
                   />
                 </div>
               </div>
@@ -272,7 +291,7 @@ export default function SettingsPage() {
                   <input 
                     type="email" value={profile.email} 
                     onChange={e => setProfile({...profile, email: e.target.value})}
-                    className="w-full bg-[#F5F5F7] rounded-2xl px-5 pr-12 py-3.5 text-sm font-bold text-[#5A0B1A] focus:bg-white focus:ring-2 focus:ring-[#8A1538]/10 border border-transparent focus:border-[#8A1538]/20 outline-none transition-all" dir="ltr"
+                    className="w-full bg-[#F5F5F7] rounded-2xl px-5 pr-12 py-3.5 text-sm font-bold text-tertiary focus:bg-white focus:ring-2 focus:ring-primary/10 border border-transparent focus:border-primary/20 outline-none transition-all" dir="ltr"
                   />
                 </div>
               </div>
@@ -283,7 +302,7 @@ export default function SettingsPage() {
                   <input 
                     type="tel" value={profile.phone} 
                     onChange={e => setProfile({...profile, phone: e.target.value})}
-                    className="w-full bg-[#F5F5F7] rounded-2xl px-5 pr-12 py-3.5 text-sm font-bold text-[#5A0B1A] focus:bg-white focus:ring-2 focus:ring-[#8A1538]/10 border border-transparent focus:border-[#8A1538]/20 outline-none transition-all" dir="ltr"
+                    className="w-full bg-[#F5F5F7] rounded-2xl px-5 pr-12 py-3.5 text-sm font-bold text-tertiary focus:bg-white focus:ring-2 focus:ring-primary/10 border border-transparent focus:border-primary/20 outline-none transition-all" dir="ltr"
                     placeholder="5500XXXX"
                   />
                 </div>
@@ -306,11 +325,11 @@ export default function SettingsPage() {
         {activeTab === "academy" && (
           <div className="p-8 space-y-8">
             <div className="flex items-center gap-4 pb-6 border-b border-gray-100">
-              <div className="w-14 h-14 rounded-[18px] bg-[#FDF8F9] flex items-center justify-center border border-[#8A1538]/10">
-                <Building2 className="w-7 h-7 text-[#8A1538]" />
+              <div className="w-14 h-14 rounded-[18px] bg-[#FDF8F9] flex items-center justify-center border border-primary/10">
+                <Building2 className="w-7 h-7 text-primary" />
               </div>
               <div>
-                <h2 className="text-xl font-black text-[#5A0B1A]">بيانات الأكاديمية</h2>
+                <h2 className="text-xl font-black text-tertiary">بيانات الأكاديمية</h2>
                 <p className="text-xs text-gray-400 font-bold">المعلومات الأساسية التي تظهر في الإيصالات والبطاقات</p>
               </div>
             </div>
@@ -321,7 +340,7 @@ export default function SettingsPage() {
                 <input 
                   type="text" value={academy.name}
                   onChange={e => setAcademy({...academy, name: e.target.value})}
-                  className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-3.5 text-sm font-bold text-[#5A0B1A] focus:bg-white focus:ring-2 focus:ring-[#8A1538]/10 border border-transparent focus:border-[#8A1538]/20 outline-none transition-all"
+                  className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-3.5 text-sm font-bold text-tertiary focus:bg-white focus:ring-2 focus:ring-primary/10 border border-transparent focus:border-primary/20 outline-none transition-all"
                 />
               </div>
               <div>
@@ -329,7 +348,7 @@ export default function SettingsPage() {
                 <input 
                   type="text" value={academy.subtitle}
                   onChange={e => setAcademy({...academy, subtitle: e.target.value})}
-                  className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-3.5 text-sm font-bold text-[#5A0B1A] focus:bg-white focus:ring-2 focus:ring-[#8A1538]/10 border border-transparent focus:border-[#8A1538]/20 outline-none transition-all"
+                  className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-3.5 text-sm font-bold text-tertiary focus:bg-white focus:ring-2 focus:ring-primary/10 border border-transparent focus:border-primary/20 outline-none transition-all"
                 />
               </div>
               <div>
@@ -337,7 +356,7 @@ export default function SettingsPage() {
                 <input 
                   type="tel" value={academy.phone} placeholder="XXXX XXXX"
                   onChange={e => setAcademy({...academy, phone: e.target.value})}
-                  className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-3.5 text-sm font-bold text-[#5A0B1A] focus:bg-white focus:ring-2 focus:ring-[#8A1538]/10 border border-transparent focus:border-[#8A1538]/20 outline-none transition-all" dir="ltr"
+                  className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-3.5 text-sm font-bold text-tertiary focus:bg-white focus:ring-2 focus:ring-primary/10 border border-transparent focus:border-primary/20 outline-none transition-all" dir="ltr"
                 />
               </div>
               <div>
@@ -345,7 +364,7 @@ export default function SettingsPage() {
                 <input 
                   type="text" value={academy.address}
                   onChange={e => setAcademy({...academy, address: e.target.value})}
-                  className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-3.5 text-sm font-bold text-[#5A0B1A] focus:bg-white focus:ring-2 focus:ring-[#8A1538]/10 border border-transparent focus:border-[#8A1538]/20 outline-none transition-all"
+                  className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-3.5 text-sm font-bold text-tertiary focus:bg-white focus:ring-2 focus:ring-primary/10 border border-transparent focus:border-primary/20 outline-none transition-all"
                 />
               </div>
               <div>
@@ -353,7 +372,7 @@ export default function SettingsPage() {
                 <select 
                   value={academy.currency}
                   onChange={e => setAcademy({...academy, currency: e.target.value})}
-                  className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-3.5 text-sm font-bold text-[#5A0B1A] focus:bg-white focus:ring-2 focus:ring-[#8A1538]/10 border border-transparent focus:border-[#8A1538]/20 outline-none transition-all appearance-none"
+                  className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-3.5 text-sm font-bold text-tertiary focus:bg-white focus:ring-2 focus:ring-primary/10 border border-transparent focus:border-primary/20 outline-none transition-all appearance-none"
                 >
                   <option value="ر.ق">ريال قطري (ر.ق)</option>
                   <option value="ر.س">ريال سعودي (ر.س)</option>
@@ -366,8 +385,8 @@ export default function SettingsPage() {
 
             {/* Subscription Defaults */}
             <div className="pt-6 border-t border-gray-100">
-              <h3 className="text-sm font-black text-[#5A0B1A] mb-4 flex items-center gap-2">
-                <Clock className="w-4 h-4 text-[#C5A059]" />
+              <h3 className="text-sm font-black text-tertiary mb-4 flex items-center gap-2">
+                <Clock className="w-4 h-4 text-secondary" />
                 إعدادات الاشتراكات
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -376,7 +395,7 @@ export default function SettingsPage() {
                   <input 
                     type="number" value={academy.subscriptionReminderDays}
                     onChange={e => setAcademy({...academy, subscriptionReminderDays: e.target.value})}
-                    className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-3.5 text-sm font-bold text-[#5A0B1A] focus:bg-white focus:ring-2 focus:ring-[#8A1538]/10 border border-transparent focus:border-[#8A1538]/20 outline-none transition-all"
+                    className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-3.5 text-sm font-bold text-tertiary focus:bg-white focus:ring-2 focus:ring-primary/10 border border-transparent focus:border-primary/20 outline-none transition-all"
                   />
                 </div>
                 <div>
@@ -384,7 +403,7 @@ export default function SettingsPage() {
                   <select 
                     value={academy.defaultSubscriptionMonths}
                     onChange={e => setAcademy({...academy, defaultSubscriptionMonths: e.target.value})}
-                    className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-3.5 text-sm font-bold text-[#5A0B1A] focus:bg-white focus:ring-2 focus:ring-[#8A1538]/10 border border-transparent focus:border-[#8A1538]/20 outline-none transition-all appearance-none"
+                    className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-3.5 text-sm font-bold text-tertiary focus:bg-white focus:ring-2 focus:ring-primary/10 border border-transparent focus:border-primary/20 outline-none transition-all appearance-none"
                   >
                     <option value="1">شهر واحد</option>
                     <option value="3">3 أشهر</option>
@@ -397,8 +416,8 @@ export default function SettingsPage() {
 
             {/* Social Media & Landing Page */}
             <div className="pt-6 border-t border-gray-100">
-              <h3 className="text-sm font-black text-[#5A0B1A] mb-4 flex items-center gap-2">
-                <Globe className="w-4 h-4 text-[#C5A059]" />
+              <h3 className="text-sm font-black text-tertiary mb-4 flex items-center gap-2">
+                <Globe className="w-4 h-4 text-secondary" />
                 التواصل والسوشال ميديا (تظهر في الصفحة الرئيسية)
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -407,7 +426,7 @@ export default function SettingsPage() {
                   <input 
                     type="tel" value={academy.whatsapp} placeholder="+974 XXXX XXXX"
                     onChange={e => setAcademy({...academy, whatsapp: e.target.value})}
-                    className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-3.5 text-sm font-bold text-[#5A0B1A] focus:bg-white focus:ring-2 focus:ring-[#8A1538]/10 border border-transparent focus:border-[#8A1538]/20 outline-none transition-all" dir="ltr"
+                    className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-3.5 text-sm font-bold text-tertiary focus:bg-white focus:ring-2 focus:ring-primary/10 border border-transparent focus:border-primary/20 outline-none transition-all" dir="ltr"
                   />
                 </div>
                 <div>
@@ -415,7 +434,7 @@ export default function SettingsPage() {
                   <input 
                     type="text" value={academy.instagram} placeholder="@academy_name"
                     onChange={e => setAcademy({...academy, instagram: e.target.value})}
-                    className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-3.5 text-sm font-bold text-[#5A0B1A] focus:bg-white focus:ring-2 focus:ring-[#8A1538]/10 border border-transparent focus:border-[#8A1538]/20 outline-none transition-all" dir="ltr"
+                    className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-3.5 text-sm font-bold text-tertiary focus:bg-white focus:ring-2 focus:ring-primary/10 border border-transparent focus:border-primary/20 outline-none transition-all" dir="ltr"
                   />
                 </div>
                 <div>
@@ -423,7 +442,7 @@ export default function SettingsPage() {
                   <input 
                     type="text" value={academy.twitter} placeholder="@academy_name"
                     onChange={e => setAcademy({...academy, twitter: e.target.value})}
-                    className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-3.5 text-sm font-bold text-[#5A0B1A] focus:bg-white focus:ring-2 focus:ring-[#8A1538]/10 border border-transparent focus:border-[#8A1538]/20 outline-none transition-all" dir="ltr"
+                    className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-3.5 text-sm font-bold text-tertiary focus:bg-white focus:ring-2 focus:ring-primary/10 border border-transparent focus:border-primary/20 outline-none transition-all" dir="ltr"
                   />
                 </div>
                 <div>
@@ -431,7 +450,7 @@ export default function SettingsPage() {
                   <input 
                     type="url" value={academy.mapUrl} placeholder="https://maps.google.com/..."
                     onChange={e => setAcademy({...academy, mapUrl: e.target.value})}
-                    className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-3.5 text-sm font-bold text-[#5A0B1A] focus:bg-white focus:ring-2 focus:ring-[#8A1538]/10 border border-transparent focus:border-[#8A1538]/20 outline-none transition-all" dir="ltr"
+                    className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-3.5 text-sm font-bold text-tertiary focus:bg-white focus:ring-2 focus:ring-primary/10 border border-transparent focus:border-primary/20 outline-none transition-all" dir="ltr"
                   />
                 </div>
                 <div className="md:col-span-2">
@@ -439,7 +458,7 @@ export default function SettingsPage() {
                   <textarea 
                     rows={2} value={academy.tagline}
                     onChange={e => setAcademy({...academy, tagline: e.target.value})}
-                    className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-3.5 text-sm font-bold text-[#5A0B1A] focus:bg-white focus:ring-2 focus:ring-[#8A1538]/10 border border-transparent focus:border-[#8A1538]/20 outline-none transition-all resize-none"
+                    className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-3.5 text-sm font-bold text-tertiary focus:bg-white focus:ring-2 focus:ring-primary/10 border border-transparent focus:border-primary/20 outline-none transition-all resize-none"
                   />
                 </div>
               </div>
@@ -447,8 +466,8 @@ export default function SettingsPage() {
 
             {/* Images */}
             <div className="pt-6 border-t border-gray-100 mt-6">
-              <h3 className="text-sm font-black text-[#5A0B1A] mb-4 flex items-center gap-2">
-                <Globe className="w-4 h-4 text-[#C5A059]" />
+              <h3 className="text-sm font-black text-tertiary mb-4 flex items-center gap-2">
+                <Globe className="w-4 h-4 text-secondary" />
                 صور صفحات الموقع
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -458,9 +477,9 @@ export default function SettingsPage() {
                     <input 
                       type="url" value={academy.heroImageUrl} placeholder="https://..."
                       onChange={e => setAcademy({...academy, heroImageUrl: e.target.value})}
-                      className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-3.5 text-sm font-bold text-[#5A0B1A] focus:bg-white focus:ring-2 focus:ring-[#8A1538]/10 border border-transparent focus:border-[#8A1538]/20 outline-none transition-all" dir="ltr"
+                      className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-3.5 text-sm font-bold text-tertiary focus:bg-white focus:ring-2 focus:ring-primary/10 border border-transparent focus:border-primary/20 outline-none transition-all" dir="ltr"
                     />
-                    <label className={`shrink-0 cursor-pointer ${uploadingImage === 'heroImageUrl' ? 'bg-gray-100' : 'bg-[#FDF8F9] hover:bg-[#8A1538]/10'} text-[#8A1538] px-4 py-3.5 rounded-2xl font-bold text-sm transition-all border border-[#8A1538]/10 relative`}>
+                    <label className={`shrink-0 cursor-pointer ${uploadingImage === 'heroImageUrl' ? 'bg-gray-100' : 'bg-[#FDF8F9] hover:bg-primary/10'} text-primary px-4 py-3.5 rounded-2xl font-bold text-sm transition-all border border-primary/10 relative`}>
                       {uploadingImage === 'heroImageUrl' ? 'جاري الرفع...' : 'رفع صورة'}
                       <input 
                         type="file" 
@@ -477,9 +496,9 @@ export default function SettingsPage() {
                     <input 
                       type="url" value={academy.defaultSportImageUrl} placeholder="https://..."
                       onChange={e => setAcademy({...academy, defaultSportImageUrl: e.target.value})}
-                      className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-3.5 text-sm font-bold text-[#5A0B1A] focus:bg-white focus:ring-2 focus:ring-[#8A1538]/10 border border-transparent focus:border-[#8A1538]/20 outline-none transition-all" dir="ltr"
+                      className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-3.5 text-sm font-bold text-tertiary focus:bg-white focus:ring-2 focus:ring-primary/10 border border-transparent focus:border-primary/20 outline-none transition-all" dir="ltr"
                     />
-                    <label className={`shrink-0 cursor-pointer ${uploadingImage === 'defaultSportImageUrl' ? 'bg-gray-100' : 'bg-[#FDF8F9] hover:bg-[#8A1538]/10'} text-[#8A1538] px-4 py-3.5 rounded-2xl font-bold text-sm transition-all border border-[#8A1538]/10 relative`}>
+                    <label className={`shrink-0 cursor-pointer ${uploadingImage === 'defaultSportImageUrl' ? 'bg-gray-100' : 'bg-[#FDF8F9] hover:bg-primary/10'} text-primary px-4 py-3.5 rounded-2xl font-bold text-sm transition-all border border-primary/10 relative`}>
                       {uploadingImage === 'defaultSportImageUrl' ? 'جاري الرفع...' : 'رفع صورة'}
                       <input 
                         type="file" 
@@ -492,7 +511,7 @@ export default function SettingsPage() {
                 </div>
                 {sports.length > 0 && (
                   <div className="md:col-span-2 pt-6 border-t border-gray-100 mt-2">
-                    <h4 className="text-[12px] font-black text-[#5A0B1A] uppercase tracking-widest mb-4">صور الرياضات المخصصة</h4>
+                    <h4 className="text-[12px] font-black text-tertiary uppercase tracking-widest mb-4">صور الرياضات المخصصة</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {sports.map(sport => (
                         <div key={sport.id}>
@@ -503,9 +522,9 @@ export default function SettingsPage() {
                                 value={(academy.sportImages && academy.sportImages[sport.name]) || ""} 
                                 placeholder="https://..."
                                 onChange={e => setAcademy({...academy, sportImages: { ...(academy.sportImages || {}), [sport.name]: e.target.value }})}
-                                className="w-full bg-[#F5F5F7] rounded-xl px-4 py-3 text-xs font-bold text-[#5A0B1A] focus:bg-white focus:ring-2 focus:ring-[#8A1538]/10 border border-transparent focus:border-[#8A1538]/20 outline-none transition-all" dir="ltr"
+                                className="w-full bg-[#F5F5F7] rounded-xl px-4 py-3 text-xs font-bold text-tertiary focus:bg-white focus:ring-2 focus:ring-primary/10 border border-transparent focus:border-primary/20 outline-none transition-all" dir="ltr"
                               />
-                              <label className={`shrink-0 cursor-pointer ${uploadingImage === sport.name ? 'bg-gray-100' : 'bg-[#FDF8F9] hover:bg-[#8A1538]/10'} text-[#8A1538] px-3 py-3 rounded-xl font-bold text-[10px] transition-all border border-[#8A1538]/10 relative whitespace-nowrap`}>
+                              <label className={`shrink-0 cursor-pointer ${uploadingImage === sport.name ? 'bg-gray-100' : 'bg-[#FDF8F9] hover:bg-primary/10'} text-primary px-3 py-3 rounded-xl font-bold text-[10px] transition-all border border-primary/10 relative whitespace-nowrap`}>
                                 {uploadingImage === sport.name ? '...' : 'رفع'}
                                 <input 
                                   type="file" 
@@ -529,11 +548,11 @@ export default function SettingsPage() {
         {activeTab === "appearance" && (
           <div className="p-8 space-y-8">
             <div className="flex items-center gap-4 pb-6 border-b border-gray-100">
-              <div className="w-14 h-14 rounded-[18px] bg-[#FDF8F9] flex items-center justify-center border border-[#8A1538]/10">
-                <Palette className="w-7 h-7 text-[#8A1538]" />
+              <div className="w-14 h-14 rounded-[18px] bg-[#FDF8F9] flex items-center justify-center border border-primary/10">
+                <Palette className="w-7 h-7 text-primary" />
               </div>
               <div>
-                <h2 className="text-xl font-black text-[#5A0B1A]">تخصيص المظهر</h2>
+                <h2 className="text-xl font-black text-tertiary">تخصيص المظهر</h2>
                 <p className="text-xs text-gray-400 font-bold">تغيير ألوان وشكل النظام</p>
               </div>
             </div>
@@ -555,13 +574,13 @@ export default function SettingsPage() {
                     onClick={() => setAppearance({...appearance, primaryColor: preset.color})}
                     className={`flex items-center gap-3 px-5 py-3 rounded-2xl border-2 transition-all ${
                       appearance.primaryColor === preset.color 
-                        ? 'border-[#C5A059] bg-[#C5A059]/5 shadow-md' 
+                        ? 'border-secondary bg-secondary/5 shadow-md' 
                         : 'border-gray-100 hover:border-gray-200'
                     }`}
                   >
                     <div className="w-8 h-8 rounded-xl shadow-inner" style={{ backgroundColor: preset.color }}></div>
                     <span className="text-xs font-bold text-gray-600">{preset.name}</span>
-                    {appearance.primaryColor === preset.color && <Check className="w-4 h-4 text-[#C5A059]" />}
+                    {appearance.primaryColor === preset.color && <Check className="w-4 h-4 text-secondary" />}
                   </button>
                 ))}
               </div>
@@ -583,13 +602,13 @@ export default function SettingsPage() {
                     onClick={() => setAppearance({...appearance, accentColor: preset.color})}
                     className={`flex items-center gap-3 px-5 py-3 rounded-2xl border-2 transition-all ${
                       appearance.accentColor === preset.color 
-                        ? 'border-[#C5A059] bg-[#C5A059]/5 shadow-md' 
+                        ? 'border-secondary bg-secondary/5 shadow-md' 
                         : 'border-gray-100 hover:border-gray-200'
                     }`}
                   >
                     <div className="w-8 h-8 rounded-xl shadow-inner" style={{ backgroundColor: preset.color }}></div>
                     <span className="text-xs font-bold text-gray-600">{preset.name}</span>
-                    {appearance.accentColor === preset.color && <Check className="w-4 h-4 text-[#C5A059]" />}
+                    {appearance.accentColor === preset.color && <Check className="w-4 h-4 text-secondary" />}
                   </button>
                 ))}
               </div>
@@ -609,7 +628,7 @@ export default function SettingsPage() {
                     onClick={() => setAppearance({...appearance, fontSize: opt.value})}
                     className={`flex-1 py-4 rounded-2xl border-2 font-bold transition-all ${
                       appearance.fontSize === opt.value 
-                        ? 'border-[#5A0B1A] bg-[#5A0B1A] text-white shadow-lg' 
+                        ? 'border-tertiary bg-tertiary text-white shadow-lg' 
                         : 'border-gray-100 text-gray-500 hover:border-gray-200'
                     } ${opt.size}`}
                   >
@@ -643,11 +662,11 @@ export default function SettingsPage() {
         {activeTab === "notifications" && (
           <div className="p-8 space-y-6">
             <div className="flex items-center gap-4 pb-6 border-b border-gray-100">
-              <div className="w-14 h-14 rounded-[18px] bg-[#FDF8F9] flex items-center justify-center border border-[#8A1538]/10">
-                <Bell className="w-7 h-7 text-[#8A1538]" />
+              <div className="w-14 h-14 rounded-[18px] bg-[#FDF8F9] flex items-center justify-center border border-primary/10">
+                <Bell className="w-7 h-7 text-primary" />
               </div>
               <div>
-                <h2 className="text-xl font-black text-[#5A0B1A]">إعدادات الإشعارات</h2>
+                <h2 className="text-xl font-black text-tertiary">إعدادات الإشعارات</h2>
                 <p className="text-xs text-gray-400 font-bold">التحكم في التنبيهات والإشعارات</p>
               </div>
             </div>
@@ -666,10 +685,10 @@ export default function SettingsPage() {
                 >
                   <div className="flex items-center gap-4">
                     <div className="w-11 h-11 rounded-[14px] bg-white flex items-center justify-center shadow-sm border border-gray-100 group-hover:shadow-md transition-all">
-                      <item.icon className="w-5 h-5 text-[#8A1538]" />
+                      <item.icon className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <h4 className="text-sm font-black text-[#5A0B1A]">{item.label}</h4>
+                      <h4 className="text-sm font-black text-tertiary">{item.label}</h4>
                       <p className="text-[11px] text-gray-400 font-bold">{item.desc}</p>
                     </div>
                   </div>
@@ -677,7 +696,7 @@ export default function SettingsPage() {
                     onClick={() => setNotifications({...notifications, [item.key]: !(notifications as any)[item.key]})}
                     className={`relative w-14 h-8 rounded-full transition-all duration-300 ${
                       (notifications as any)[item.key] 
-                        ? 'bg-[#8A1538]' 
+                        ? 'bg-primary' 
                         : 'bg-gray-300'
                     }`}
                   >
@@ -694,7 +713,7 @@ export default function SettingsPage() {
               <select 
                 value={notifications.reminderDaysBefore}
                 onChange={e => setNotifications({...notifications, reminderDaysBefore: e.target.value})}
-                className="w-full max-w-xs bg-[#F5F5F7] rounded-2xl px-5 py-3.5 text-sm font-bold text-[#5A0B1A] focus:bg-white focus:ring-2 focus:ring-[#8A1538]/10 border border-transparent focus:border-[#8A1538]/20 outline-none transition-all appearance-none"
+                className="w-full max-w-xs bg-[#F5F5F7] rounded-2xl px-5 py-3.5 text-sm font-bold text-tertiary focus:bg-white focus:ring-2 focus:ring-primary/10 border border-transparent focus:border-primary/20 outline-none transition-all appearance-none"
               >
                 <option value="1">يوم واحد</option>
                 <option value="3">3 أيام</option>
@@ -710,11 +729,11 @@ export default function SettingsPage() {
         {activeTab === "security" && (
           <div className="p-8 space-y-8">
             <div className="flex items-center gap-4 pb-6 border-b border-gray-100">
-              <div className="w-14 h-14 rounded-[18px] bg-[#FDF8F9] flex items-center justify-center border border-[#8A1538]/10">
-                <Shield className="w-7 h-7 text-[#8A1538]" />
+              <div className="w-14 h-14 rounded-[18px] bg-[#FDF8F9] flex items-center justify-center border border-primary/10">
+                <Shield className="w-7 h-7 text-primary" />
               </div>
               <div>
-                <h2 className="text-xl font-black text-[#5A0B1A]">الأمان وكلمة المرور</h2>
+                <h2 className="text-xl font-black text-tertiary">الأمان وكلمة المرور</h2>
                 <p className="text-xs text-gray-400 font-bold">تغيير كلمة المرور وإدارة الجلسات</p>
               </div>
             </div>
@@ -728,7 +747,7 @@ export default function SettingsPage() {
                     type={showCurrentPass ? "text" : "password"} 
                     value={security.currentPassword}
                     onChange={e => setSecurity({...security, currentPassword: e.target.value})}
-                    className="w-full bg-[#F5F5F7] rounded-2xl px-5 pr-12 py-3.5 text-sm font-bold text-[#5A0B1A] focus:bg-white focus:ring-2 focus:ring-[#8A1538]/10 border border-transparent focus:border-[#8A1538]/20 outline-none transition-all"
+                    className="w-full bg-[#F5F5F7] rounded-2xl px-5 pr-12 py-3.5 text-sm font-bold text-tertiary focus:bg-white focus:ring-2 focus:ring-primary/10 border border-transparent focus:border-primary/20 outline-none transition-all"
                     placeholder="••••••••"
                   />
                   <button onClick={() => setShowCurrentPass(!showCurrentPass)} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
@@ -744,7 +763,7 @@ export default function SettingsPage() {
                     type={showNewPass ? "text" : "password"} 
                     value={security.newPassword}
                     onChange={e => setSecurity({...security, newPassword: e.target.value})}
-                    className="w-full bg-[#F5F5F7] rounded-2xl px-5 pr-12 py-3.5 text-sm font-bold text-[#5A0B1A] focus:bg-white focus:ring-2 focus:ring-[#8A1538]/10 border border-transparent focus:border-[#8A1538]/20 outline-none transition-all"
+                    className="w-full bg-[#F5F5F7] rounded-2xl px-5 pr-12 py-3.5 text-sm font-bold text-tertiary focus:bg-white focus:ring-2 focus:ring-primary/10 border border-transparent focus:border-primary/20 outline-none transition-all"
                     placeholder="8 أحرف على الأقل"
                   />
                   <button onClick={() => setShowNewPass(!showNewPass)} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
@@ -760,7 +779,7 @@ export default function SettingsPage() {
                     type="password" 
                     value={security.confirmPassword}
                     onChange={e => setSecurity({...security, confirmPassword: e.target.value})}
-                    className="w-full bg-[#F5F5F7] rounded-2xl px-5 pr-12 py-3.5 text-sm font-bold text-[#5A0B1A] focus:bg-white focus:ring-2 focus:ring-[#8A1538]/10 border border-transparent focus:border-[#8A1538]/20 outline-none transition-all"
+                    className="w-full bg-[#F5F5F7] rounded-2xl px-5 pr-12 py-3.5 text-sm font-bold text-tertiary focus:bg-white focus:ring-2 focus:ring-primary/10 border border-transparent focus:border-primary/20 outline-none transition-all"
                     placeholder="أعد كتابة كلمة المرور"
                   />
                 </div>
@@ -771,7 +790,7 @@ export default function SettingsPage() {
               <button
                 onClick={handlePasswordChange}
                 disabled={saving || !security.newPassword || security.newPassword !== security.confirmPassword}
-                className="w-full bg-[#8A1538] text-white py-4 rounded-2xl font-black text-sm hover:bg-[#5A0B1A] shadow-xl shadow-[#8A1538]/20 flex items-center justify-center gap-3 disabled:opacity-50 transition-all mt-2"
+                className="w-full bg-primary text-white py-4 rounded-2xl font-black text-sm hover:bg-tertiary shadow-xl shadow-primary/20 flex items-center justify-center gap-3 disabled:opacity-50 transition-all mt-2"
               >
                 <Lock className="w-5 h-5" />
                 تغيير كلمة المرور
@@ -812,7 +831,7 @@ export default function SettingsPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="bg-[#8A1538] text-white px-10 py-3.5 rounded-2xl font-black text-sm hover:bg-[#5A0B1A] shadow-xl shadow-[#8A1538]/20 flex items-center gap-3 disabled:opacity-50 transition-all"
+            className="bg-primary text-white px-10 py-3.5 rounded-2xl font-black text-sm hover:bg-tertiary shadow-xl shadow-primary/20 flex items-center gap-3 disabled:opacity-50 transition-all"
           >
             {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
             حفظ الإعدادات

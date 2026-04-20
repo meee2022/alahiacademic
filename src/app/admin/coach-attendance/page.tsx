@@ -189,7 +189,7 @@ export default function CoachAttendancePage() {
   return (
     <div className="min-h-screen bg-[#F8F9FA] pb-24" dir="rtl">
       {/* Header Area */}
-      <div className="bg-[#8A1538] text-white p-8 rounded-b-[40px] shadow-lg relative overflow-hidden">
+      <div className="bg-primary text-white p-8 rounded-b-[40px] shadow-lg relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
           <div className="absolute top-10 left-10 w-64 h-64 bg-white rounded-full blur-3xl"></div>
           <div className="absolute bottom-10 right-10 w-96 h-96 bg-white rounded-full blur-3xl"></div>
@@ -218,8 +218,8 @@ export default function CoachAttendancePage() {
         {/* Summary Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="bg-white p-7 rounded-[35px] shadow-sm border border-gray-100 flex items-center gap-6 relative overflow-hidden group">
-            <div className="bg-[#8A1538]/10 p-4 rounded-2xl">
-              <Users className="h-8 w-8 text-[#8A1538]" />
+            <div className="bg-primary/10 p-4 rounded-2xl">
+              <Users className="h-8 w-8 text-primary" />
             </div>
             <div>
               <p className="text-gray-400 text-xs font-black uppercase tracking-widest">إجمالي المدربين</p>
@@ -272,12 +272,12 @@ export default function CoachAttendancePage() {
             <div className="relative">
               <label className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-3 block mr-1">تاريخ التحضير</label>
               <div className="relative group">
-                <Calendar className="absolute right-5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#8A1538] z-10" />
+                <Calendar className="absolute right-5 top-1/2 -translate-y-1/2 h-5 w-5 text-primary z-10" />
                 <input 
                   type="date" 
                   value={date} 
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full pr-14 pl-5 py-5 bg-gray-50 border-2 border-transparent focus:border-[#8A1538]/20 focus:bg-white rounded-[22px] transition-all font-bold text-gray-900 outline-none shadow-inner" 
+                  className="w-full pr-14 pl-5 py-5 bg-gray-50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-[22px] transition-all font-bold text-gray-900 outline-none shadow-inner" 
                 />
               </div>
             </div>
@@ -286,11 +286,11 @@ export default function CoachAttendancePage() {
             <div className="relative text-right" dir="rtl">
               <label className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-3 block mr-1">قسم الرياضة</label>
               <div className="relative group text-right">
-                <LayoutGrid className="absolute right-5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#8A1538] z-10" />
+                <LayoutGrid className="absolute right-5 top-1/2 -translate-y-1/2 h-5 w-5 text-primary z-10" />
                 <select 
                   value={selectedSport} 
                   onChange={(e) => setSelectedSport(e.target.value)}
-                  className="w-full pr-14 pl-12 py-5 bg-gray-50 border-2 border-transparent focus:border-[#8A1538]/20 focus:bg-white rounded-[22px] transition-all font-bold text-gray-900 outline-none appearance-none shadow-inner text-right rtl"
+                  className="w-full pr-14 pl-12 py-5 bg-gray-50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-[22px] transition-all font-bold text-gray-900 outline-none appearance-none shadow-inner text-right rtl"
                 >
                   <option value="all">جميع الرياضات</option>
                   {sports.map(s => (
@@ -305,20 +305,20 @@ export default function CoachAttendancePage() {
             <div className="relative">
               <label className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-3 block mr-1">البحث بالاسم</label>
               <div className="relative group text-left underline-offset-4">
-                <Search className="absolute right-5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#8A1538] z-10" />
+                <Search className="absolute right-5 top-1/2 -translate-y-1/2 h-5 w-5 text-primary z-10" />
                 <input 
                   type="text" 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="ابحث عن اسم المدرب..."
-                  className="w-full pr-14 pl-5 py-5 bg-gray-50 border-2 border-transparent focus:border-[#8A1538]/20 focus:bg-white rounded-[22px] transition-all font-bold text-gray-900 outline-none shadow-inner" 
+                  className="w-full pr-14 pl-5 py-5 bg-gray-50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-[22px] transition-all font-bold text-gray-900 outline-none shadow-inner" 
                 />
               </div>
             </div>
           </div>
 
           <div className="mt-8 flex flex-col sm:flex-row gap-4">
-            <button className="px-8 bg-gray-100 text-[#8A1538] py-4 rounded-[20px] font-black flex items-center justify-center gap-2 hover:bg-gray-200 transition-all group">
+            <button className="px-8 bg-gray-100 text-primary py-4 rounded-[20px] font-black flex items-center justify-center gap-2 hover:bg-gray-200 transition-all group">
               <Filter className="h-5 w-5 group-hover:rotate-180 transition-transform duration-500" />
               تحديث
             </button>
@@ -332,7 +332,7 @@ export default function CoachAttendancePage() {
             <button 
               onClick={handleSave}
               disabled={saving || filteredCoaches.length === 0}
-              className="flex-1 px-12 bg-[#8A1538] text-white py-4 rounded-[20px] font-black flex items-center justify-center gap-2 shadow-lg hover:bg-[#7a1432] disabled:opacity-50 transition-all text-lg"
+              className="flex-1 px-12 bg-primary text-white py-4 rounded-[20px] font-black flex items-center justify-center gap-2 shadow-lg hover:bg-[#7a1432] disabled:opacity-50 transition-all text-lg"
             >
               {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
               <span>حفظ الحضور</span>
@@ -345,7 +345,7 @@ export default function CoachAttendancePage() {
           <div className="flex items-center justify-between px-2">
             <div>
               <h2 className="text-2xl font-black text-gray-900">كشف التحضير</h2>
-              <div className="h-1.5 w-12 bg-[#8A1538] rounded-full mt-1.5"></div>
+              <div className="h-1.5 w-12 bg-primary rounded-full mt-1.5"></div>
             </div>
             <p className="text-gray-400 text-xs font-black uppercase tracking-widest pb-1 border-b-2 border-gray-100">تحضير {filteredCoaches.length} مدرباً</p>
           </div>
@@ -354,7 +354,7 @@ export default function CoachAttendancePage() {
             {loading ? (
               <div className="col-span-full py-32 flex flex-col items-center justify-center text-gray-400">
                 <div className="relative">
-                   <Loader2 className="h-16 w-16 animate-spin text-[#8A1538] mb-6" />
+                   <Loader2 className="h-16 w-16 animate-spin text-primary mb-6" />
                    <div className="absolute inset-x-0 bottom-0 h-4 bg-gradient-to-t from-[#F8F9FA] to-transparent"></div>
                 </div>
                 <p className="font-black text-lg">جاري مزامنة بيانات المدربين...</p>
@@ -365,7 +365,7 @@ export default function CoachAttendancePage() {
                   <User className="h-20 w-20 opacity-10" />
                 </div>
                 <p className="font-black text-xl">لا يوجد مدربين مطابقين للبحث</p>
-                <button onClick={() => {setSearchQuery(""); setSelectedSport("all")}} className="mt-4 text-[#8A1538] font-bold underline">إعادة تعيين الفلاتر</button>
+                <button onClick={() => {setSearchQuery(""); setSelectedSport("all")}} className="mt-4 text-primary font-bold underline">إعادة تعيين الفلاتر</button>
               </div>
             ) : (
               filteredCoaches.map((coach) => {
@@ -396,9 +396,9 @@ export default function CoachAttendancePage() {
 
                       {/* Name & Info */}
                       <div className="flex-1 min-w-0">
-                        <div className="font-extrabold text-[#5A0B1A] text-sm leading-tight truncate">{coach.fullName}</div>
+                        <div className="font-extrabold text-tertiary text-sm leading-tight truncate">{coach.fullName}</div>
                         <div className="text-[10px] text-gray-400 font-bold mt-1 flex items-center gap-1">
-                          <Trophy className="w-3 h-3 text-[#C5A059]" />
+                          <Trophy className="w-3 h-3 text-secondary" />
                           {coach.Sport?.name || "مدرب عام الأكاديمية"}
                         </div>
                       </div>
@@ -451,7 +451,7 @@ export default function CoachAttendancePage() {
                         placeholder="أضف ملاحظة..."
                         value={notes[coach.id] || ""}
                         onChange={(e) => setNotes(prev => ({ ...prev, [coach.id]: e.target.value }))}
-                        className="w-full pr-8 pl-3 py-2 bg-gray-50 border border-gray-200 focus:border-[#8A1538]/30 rounded-lg text-[11px] font-bold text-gray-700 outline-none placeholder:text-gray-400 transition-colors"
+                        className="w-full pr-8 pl-3 py-2 bg-gray-50 border border-gray-200 focus:border-primary/30 rounded-lg text-[11px] font-bold text-gray-700 outline-none placeholder:text-gray-400 transition-colors"
                       />
                     </div>
                   </div>

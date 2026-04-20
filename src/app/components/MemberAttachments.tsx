@@ -190,7 +190,7 @@ export default function MemberAttachments({ memberId }: { memberId: string }) {
                     {getFileEmoji(doc.fileName)}
                   </div>
                   <div className="truncate">
-                    <p className="text-sm font-semibold text-gray-800 truncate group-hover:text-[#8A1538] transition-colors">{doc.fileName}</p>
+                    <p className="text-sm font-semibold text-gray-800 truncate group-hover:text-primary transition-colors">{doc.fileName}</p>
                     <p className="text-xs text-gray-500">{new Date(doc.createdAt).toLocaleDateString('ar-EG')} • {Math.round(doc.fileSize / 1024)} KB</p>
                   </div>
                 </button>

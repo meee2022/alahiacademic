@@ -3,7 +3,11 @@
 @theme {
   --font-sans: var(--font-sans);
   --font-almarai: var(--font-almarai);
-  --color-secondary-fixed: #ffdea5;
+  
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  
+  /* Retaining others for compatibility */
   --color-primary-container: #8a1538;
   --color-tertiary: #61111e;
   --color-on-secondary-container: #785a1a;
@@ -19,13 +23,11 @@
   --color-secondary-container: #fed488;
   --color-on-tertiary: #ffffff;
   --color-surface-container-highest: #e2e2e2;
-  --color-secondary: #775a19;
   --color-error-container: #ffdad6;
   --color-primary-fixed: #ffd9dd;
   --color-surface-bright: #f9f9f9;
   --color-surface-container: #eeeeee;
   --color-on-surface: #1a1c1c;
-  --color-primary: #670024;
   --color-tertiary-fixed-dim: #ffb2b6;
   --color-on-error: #ffffff;
   --color-on-background: #1a1c1c;
@@ -56,19 +58,24 @@
   :root {
     --background: #F5F5F7;
     --foreground: #2d1820;
-    --primary: #8A1538; /* Maroon */
+    
+    /* Dynamic Theme Variables with fallback to original values */
+    --primary: var(--primary-color, #8A1538); 
+    --secondary: var(--accent-color, #C5A059);
+    
     --primary-foreground: #ffffff;
-    --secondary: #C5A059; /* Gold */
     --secondary-foreground: #ffffff;
-    --tertiary: #5D1026; /* Dark Maroon */
-    --sidebar: #8A1538;
+    --tertiary: color-mix(in srgb, var(--primary) 70%, black); /* Dynamic Dark Maroon */
+    --sidebar: var(--primary);
     
     --card: #ffffff;
     --card-foreground: #2d1820;
     --border: #f2eaea;
     
-    --ring: #8A1538;
+    --ring: var(--primary);
     --radius: 0.75rem;
+    
+    font-size: var(--base-font-size, 16px);
   }
 }
 

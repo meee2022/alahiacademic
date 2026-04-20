@@ -113,7 +113,7 @@ export default function SubscriptionsPage() {
       subscriptionEnd: sub.subscriptionEnd || "",
       monthlyFee: sub.monthlyFee?.toString() || "",
       status: sub.status || "active",
-      coachId: ""
+      coachId: sub.coachId || ""
     });
     setShowModal(true);
   };
@@ -141,7 +141,8 @@ export default function SubscriptionsPage() {
         subscriptionStart: form.subscriptionStart || null,
         subscriptionEnd: form.subscriptionEnd || null,
         monthlyFee: form.monthlyFee ? Number(form.monthlyFee) : null,
-        status: form.status
+        status: form.status,
+        coachId: form.coachId || null
       }).eq("id", editingSub.id);
       if (error) throw error;
       setShowModal(false);
@@ -158,12 +159,12 @@ export default function SubscriptionsPage() {
     <div className="space-y-8 max-w-7xl mx-auto">
       {/* Premium Editorial Header */}
       <div className="flex flex-col items-center justify-center text-center mt-4 mb-10">
-        <span className="text-xs font-bold tracking-[0.2em] text-[#C5A059] uppercase mb-4">
+        <span className="text-xs font-bold tracking-[0.2em] text-secondary uppercase mb-4">
           Academy Management
         </span>
-        <h1 className="text-4xl md:text-5xl font-extrabold text-[#8A1538] leading-tight flex flex-col items-center gap-1">
+        <h1 className="text-4xl md:text-5xl font-extrabold text-primary leading-tight flex flex-col items-center gap-1">
           إدارة الاشتراكات
-          <span className="text-[#C5A059] text-3xl md:text-4xl">للموسم الحالي</span>
+          <span className="text-secondary text-3xl md:text-4xl">للموسم الحالي</span>
         </h1>
       </div>
 
@@ -173,7 +174,7 @@ export default function SubscriptionsPage() {
         <input
           type="text"
           placeholder="ابحث باسم العضو أو الرياضة..."
-          className="w-full pl-6 pr-12 py-3.5 border border-gray-200 rounded-full focus:ring-2 focus:ring-[#8A1538]/20 focus:border-[#8A1538] bg-white shadow-sm text-gray-900 font-medium transition-all"
+          className="w-full pl-6 pr-12 py-3.5 border border-gray-200 rounded-full focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white shadow-sm text-gray-900 font-medium transition-all"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -192,8 +193,8 @@ export default function SubscriptionsPage() {
             onClick={() => setActiveTab(tab.id)}
             className={`px-8 py-2.5 rounded-full text-sm font-bold transition-all border ${
               activeTab === tab.id 
-                ? "bg-[#8A1538] text-white border-[#8A1538] shadow-md shadow-[#8A1538]/20" 
-                : "bg-white text-[#8A1538] border-[#8A1538]/20 hover:border-[#8A1538]/40 hover:bg-rose-50/30"
+                ? "bg-primary text-white border-primary shadow-md shadow-primary/20" 
+                : "bg-white text-primary border-primary/20 hover:border-primary/40 hover:bg-rose-50/30"
             }`}
           >
             {tab.label}
@@ -204,7 +205,7 @@ export default function SubscriptionsPage() {
       {/* Subscription Cards Grid */}
       {loading ? (
         <div className="flex justify-center p-12">
-          <Loader2 className="h-10 w-10 animate-spin text-[#8A1538]" />
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center p-12 text-gray-500 font-medium">
@@ -227,10 +228,10 @@ export default function SubscriptionsPage() {
             // Determine border color based loosely on status to mimic design or keep standard Gold
             const isExpired = status === 'expired';
             const statusConfig = {
-              "active": { text: "مفعل", class: "bg-[#F3F6F4] text-[#4F7C5B]", border: "border-[#C5A059]" },
-              "expired": { text: "منتهي", class: "bg-rose-50 text-rose-600", border: "border-[#8A1538]" },
+              "active": { text: "مفعل", class: "bg-[#F3F6F4] text-[#4F7C5B]", border: "border-secondary" },
+              "expired": { text: "منتهي", class: "bg-rose-50 text-rose-600", border: "border-primary" },
               "frozen": { text: "مجمد", class: "bg-gray-100 text-gray-600", border: "border-gray-400" },
-              "expiring_soon": { text: "ينتهي قريباً", class: "bg-orange-50 text-orange-600", border: "border-[#C5A059]" }
+              "expiring_soon": { text: "ينتهي قريباً", class: "bg-orange-50 text-orange-600", border: "border-secondary" }
             };
 
             const currentStatus = isExpiringSoon ? statusConfig.expiring_soon : statusConfig[status as keyof typeof statusConfig] || statusConfig.active;
@@ -249,8 +250,8 @@ export default function SubscriptionsPage() {
                       )}
                     </div>
                     <div>
-                      <h3 className="text-xl font-extrabold text-[#8A1538] leading-tight mb-1">{sub.Member?.fullNameArabic || "غير محدد"}</h3>
-                      <div className="flex items-center gap-1.5 text-[#C5A059] text-xs font-bold">
+                      <h3 className="text-xl font-extrabold text-primary leading-tight mb-1">{sub.Member?.fullNameArabic || "غير محدد"}</h3>
+                      <div className="flex items-center gap-1.5 text-secondary text-xs font-bold">
                         <span>🤸</span>
                         <span>{sub.Sport?.name || "غير محدد"}</span>
                         <span className="text-gray-400 font-normal">- المستوى الأول</span>
@@ -266,13 +267,13 @@ export default function SubscriptionsPage() {
                 <div className="grid grid-cols-2 gap-3 mb-6">
                   <div className="bg-[#F9F9FB] rounded-2xl p-4 text-center">
                     <span className="text-[10px] text-gray-400 font-bold mb-1.5 block">بداية الاشتراك</span>
-                    <span className="text-sm font-extrabold text-[#8A1538]">
+                    <span className="text-sm font-extrabold text-primary">
                       {sub.subscriptionStart ? new Date(sub.subscriptionStart).toLocaleDateString("ar-EG", { day: 'numeric', month: 'long', year: 'numeric' }) : "-"}
                     </span>
                   </div>
                   <div className="bg-[#F9F9FB] rounded-2xl p-4 text-center">
                     <span className="text-[10px] text-rose-400 font-bold mb-1.5 block">نهاية الاشتراك</span>
-                    <span className="text-sm font-extrabold text-[#8A1538]">
+                    <span className="text-sm font-extrabold text-primary">
                       {sub.subscriptionEnd ? new Date(sub.subscriptionEnd).toLocaleDateString("ar-EG", { day: 'numeric', month: 'long', year: 'numeric' }) : "-"}
                     </span>
                   </div>
@@ -285,7 +286,7 @@ export default function SubscriptionsPage() {
                     {isExpired ? (
                       <button 
                         onClick={() => handleRenew(sub)}
-                        className="bg-[#8A1538] text-white px-5 py-2.5 rounded-2xl text-xs font-bold flex items-center gap-2 hover:bg-[#5D1026] transition-colors"
+                        className="bg-primary text-white px-5 py-2.5 rounded-2xl text-xs font-bold flex items-center gap-2 hover:bg-[#5D1026] transition-colors"
                       >
                         <RefreshCw className="h-3.5 w-3.5" />
                         إعادة تفعيل
@@ -293,7 +294,7 @@ export default function SubscriptionsPage() {
                     ) : (
                       <button 
                         onClick={() => handleRenew(sub)}
-                        className="bg-[#C5A059] text-white px-6 py-2.5 rounded-2xl text-xs font-bold flex items-center gap-2 hover:bg-[#a68648] transition-colors"
+                        className="bg-secondary text-white px-6 py-2.5 rounded-2xl text-xs font-bold flex items-center gap-2 hover:bg-[#a68648] transition-colors"
                       >
                         <RefreshCw className="h-3.5 w-3.5" />
                         تجديد
@@ -326,7 +327,7 @@ export default function SubscriptionsPage() {
                   <div className="text-left flex flex-col items-end">
                     <span className="text-[10px] text-gray-400 font-bold mb-0.5">رسوم الاشتراك</span>
                     <div className="flex items-baseline gap-1">
-                      <span className="text-xl font-black text-[#8A1538]">{sub.monthlyFee || 0}</span>
+                      <span className="text-xl font-black text-primary">{sub.monthlyFee || 0}</span>
                       <span className="text-[10px] text-gray-500 font-bold">ريال</span>
                     </div>
                   </div>
@@ -343,7 +344,7 @@ export default function SubscriptionsPage() {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-[24px] shadow-2xl w-full max-w-lg overflow-hidden border border-gray-100">
             <div className="flex items-center justify-between p-6 border-b border-gray-100">
-              <h2 className="text-xl font-bold text-[#8A1538]">
+              <h2 className="text-xl font-bold text-primary">
                 تعديل / تجديد اشتراك
               </h2>
               <button onClick={() => setShowModal(false)} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-full transition-colors"><X className="h-5 w-5 text-gray-500" /></button>
@@ -351,12 +352,12 @@ export default function SubscriptionsPage() {
             
             <div className="p-6">
               <div className="bg-[#F5F5F7] rounded-[16px] p-4 mb-6 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-[#8A1538] flex items-center justify-center text-white font-bold text-lg border-2 border-white shadow-sm">
+                <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg border-2 border-white shadow-sm">
                   {editingSub?.Member?.fullNameArabic?.charAt(0) || "?"}
                 </div>
                 <div>
-                  <p className="font-extrabold text-[#8A1538]">{editingSub?.Member?.fullNameArabic}</p>
-                  <p className="text-xs font-bold text-[#C5A059] mt-0.5">{editingSub?.Sport?.name}</p>
+                  <p className="font-extrabold text-primary">{editingSub?.Member?.fullNameArabic}</p>
+                  <p className="text-xs font-bold text-secondary mt-0.5">{editingSub?.Sport?.name}</p>
                 </div>
               </div>
 
@@ -367,7 +368,7 @@ export default function SubscriptionsPage() {
                   <select
                     value={form.coachId}
                     onChange={e => setForm({...form, coachId: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#8A1538]/20 focus:border-[#8A1538] text-gray-900 font-medium bg-[#F9F9FB]"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary text-gray-900 font-medium bg-[#F9F9FB]"
                   >
                     <option value="">-- اختر المدرب (اختياري) --</option>
                     {coaches
@@ -397,24 +398,24 @@ export default function SubscriptionsPage() {
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase">بداية الاشتراك</label>
                     <input type="date" value={form.subscriptionStart} onChange={e => setForm({...form, subscriptionStart: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#8A1538]/20 focus:border-[#8A1538] text-gray-900 font-medium bg-[#F9F9FB]" />
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary text-gray-900 font-medium bg-[#F9F9FB]" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-rose-500 mb-1.5 uppercase">نهاية الاشتراك</label>
                     <input type="date" value={form.subscriptionEnd} onChange={e => setForm({...form, subscriptionEnd: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#8A1538]/20 focus:border-[#8A1538] text-gray-900 font-medium bg-[#F9F9FB]" />
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary text-gray-900 font-medium bg-[#F9F9FB]" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase">رسوم الاشتراك (ريال)</label>
                     <input type="number" value={form.monthlyFee} onChange={e => setForm({...form, monthlyFee: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#8A1538]/20 focus:border-[#8A1538] text-gray-900 font-medium bg-[#F9F9FB]" placeholder="0" />
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary text-gray-900 font-medium bg-[#F9F9FB]" placeholder="0" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase">الحالة</label>
                     <select value={form.status} onChange={e => setForm({...form, status: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#8A1538]/20 focus:border-[#8A1538] text-gray-900 font-bold bg-[#F9F9FB]">
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary text-gray-900 font-bold bg-[#F9F9FB]">
                       <option value="active">مفعل</option>
                       <option value="expired">منتهي</option>
                       <option value="frozen">مجمد</option>
@@ -429,7 +430,7 @@ export default function SubscriptionsPage() {
               <button 
                 onClick={handleSave} 
                 disabled={saving}
-                className="px-8 py-3 bg-[#8A1538] text-white rounded-[14px] transition-all duration-200 hover:bg-[#5D1026] hover:shadow-lg disabled:opacity-50 font-bold text-sm flex items-center gap-2"
+                className="px-8 py-3 bg-primary text-white rounded-[14px] transition-all duration-200 hover:bg-[#5D1026] hover:shadow-lg disabled:opacity-50 font-bold text-sm flex items-center gap-2"
               >
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                 حفظ التغييرات

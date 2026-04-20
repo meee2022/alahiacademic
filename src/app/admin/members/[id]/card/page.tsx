@@ -134,8 +134,8 @@ export default function MembershipCardPage() {
         {/* Top Header */}
         <div className="flex justify-between items-start relative z-10 w-full">
            {/* Title Block (Language-aware positioning) */}
-           <div className="border border-[#C5A059]/40 rounded-md px-3 py-1 flex flex-col items-center justify-center bg-black/20 shadow-sm print:border-[#C5A059] print:bg-black/20 mt-0.5">
-             <h1 className="text-[12px] leading-tight font-black text-[#C5A059] tracking-wider mb-0.5">{t.academy}</h1>
+           <div className="border border-secondary/40 rounded-md px-3 py-1 flex flex-col items-center justify-center bg-black/20 shadow-sm print:border-secondary print:bg-black/20 mt-0.5">
+             <h1 className="text-[12px] leading-tight font-black text-secondary tracking-wider mb-0.5">{t.academy}</h1>
              <h2 className="text-[9px] leading-tight font-medium text-gray-200">{t.subtitle}</h2>
            </div>
 
@@ -173,20 +173,20 @@ export default function MembershipCardPage() {
             
             <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 text-center mt-1">
               <div className="flex flex-col items-center">
-                <span className="text-[8.5px] leading-tight font-bold text-[#C5A059] mb-0.5 print:text-[#C5A059] drop-shadow-sm print:drop-shadow-none">{t.memNo}</span>
+                <span className="text-[8.5px] leading-tight font-bold text-secondary mb-0.5 print:text-secondary drop-shadow-sm print:drop-shadow-none">{t.memNo}</span>
                 <span className="text-[10px] leading-tight font-mono tracking-wider">{membershipNumber ? `10${membershipNumber}` : "..."}</span>
               </div>
               <div className="flex flex-col items-center">
-                <span className="text-[8.5px] leading-tight font-bold text-[#C5A059] mb-0.5 print:text-[#C5A059] drop-shadow-sm print:drop-shadow-none">{t.natId}</span>
+                <span className="text-[8.5px] leading-tight font-bold text-secondary mb-0.5 print:text-secondary drop-shadow-sm print:drop-shadow-none">{t.natId}</span>
                 <span className="text-[10px] leading-tight font-mono tracking-wider mt-0.5">{member.nationalId || "-"}</span>
               </div>
               
               <div className="flex flex-col items-center">
-                <span className="text-[8.5px] leading-tight font-bold text-[#C5A059] mb-0.5 print:text-[#C5A059] drop-shadow-sm print:drop-shadow-none">{t.age}</span>
+                <span className="text-[8.5px] leading-tight font-bold text-secondary mb-0.5 print:text-secondary drop-shadow-sm print:drop-shadow-none">{t.age}</span>
                 <span className="text-[10px] leading-tight mt-0.5">{calculateAge(member.dateOfBirth)} {t.years}</span>
               </div>
               <div className="flex flex-col items-center overflow-hidden">
-                <span className="text-[8.5px] leading-tight font-bold text-[#C5A059] mb-0.5 print:text-[#C5A059] drop-shadow-sm print:drop-shadow-none">{t.sport}</span>
+                <span className="text-[8.5px] leading-tight font-bold text-secondary mb-0.5 print:text-secondary drop-shadow-sm print:drop-shadow-none">{t.sport}</span>
                 <span className="text-[10px] leading-tight truncate w-full">{member.SportsEnrollment?.[0]?.Sport?.name || t.none}</span>
               </div>
             </div>
@@ -195,7 +195,7 @@ export default function MembershipCardPage() {
 
         {/* Footer */}
         <div className="mt-auto flex justify-between items-end relative z-10 w-full pt-1.5">
-          <span className="text-[9px] leading-none font-black tracking-wider text-[#C5A059] uppercase drop-shadow-sm print:drop-shadow-none" dir="ltr">
+          <span className="text-[9px] leading-none font-black tracking-wider text-secondary uppercase drop-shadow-sm print:drop-shadow-none" dir="ltr">
             MEMBERSHIP CARD
           </span>
           <span className="text-[8.5px] leading-none text-gray-300 font-mono flex items-center gap-1 print:text-gray-200" dir="ltr">

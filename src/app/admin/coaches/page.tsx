@@ -7,8 +7,8 @@ import { insforge } from "@/lib/insforge/client";
 export default function CoachesPage() {
   const [coaches, setCoaches] = useState<any[]>([]);
   const [sports, setSports] = useState<any[]>([]);
-  const [sportsCount, setSportsCount] = useState<Record<string, number>>({});
-  const [sportsIncome, setSportsIncome] = useState<Record<string, number>>({});
+  const [coachStudentsCount, setCoachStudentsCount] = useState<Record<string, number>>({});
+  const [coachIncome, setCoachIncome] = useState<Record<string, number>>({});
   const [paidStudentsCount, setPaidStudentsCount] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -36,7 +36,7 @@ export default function CoachesPage() {
       const [coachRes, sportRes, enrollmentsRes, paymentsRes] = await Promise.all([
         insforge.database.from("Coach").select("*, Sport(name)").order("fullName", { ascending: true }),
         insforge.database.from("Sport").select("id, name").eq("isActive", true),
-        insforge.database.from("SportsEnrollment").select("sportId").eq("status", "active"),
+        insforge.database.from("SportsEnrollment").select("sportId, memberId, coachId").eq("status", "active"),
         insforge.database.from("Payment").select("sportId, amount, memberId, paymentType").eq("category", "income").gte("date", startOfMonth)
       ]);
       if (coachRes.error || sportRes.error || enrollmentsRes.error || paymentsRes.error) {
@@ -51,33 +51,42 @@ export default function CoachesPage() {
       if (coachRes.data) setCoaches(coachRes.data);
       if (sportRes.data) setSports(sportRes.data);
       
+      const memberCoachMap: Record<string, string> = {};
+      
       if (enrollmentsRes.data) {
-        const counts: Record<string, number> = {};
+        const countsByCoach: Record<string, number> = {};
         enrollmentsRes.data.forEach((en: any) => {
-           counts[en.sportId] = (counts[en.sportId] || 0) + 1;
+           if (en.coachId) {
+             countsByCoach[en.coachId] = (countsByCoach[en.coachId] || 0) + 1;
+           }
+           if (en.memberId && en.sportId && en.coachId) {
+             memberCoachMap[`${en.memberId}_${en.sportId}`] = en.coachId;
+           }
         });
-        setSportsCount(counts);
+        setCoachStudentsCount(countsByCoach);
       }
       
       if (paymentsRes.data) {
-        const incomeMap: Record<string, number> = {};
-        const paidStudentsMap: Record<string, Set<string>> = {};
+        const incomeMapByCoach: Record<string, number> = {};
+        const paidStudentsMapByCoach: Record<string, Set<string>> = {};
         
         paymentsRes.data.forEach((p: any) => {
-          // Filter to only count subscription-related income for the coach's percentage
           if (p.sportId && p.paymentType === "subscription") {
-            incomeMap[p.sportId] = (incomeMap[p.sportId] || 0) + Number(p.amount);
-            
-            if (!paidStudentsMap[p.sportId]) paidStudentsMap[p.sportId] = new Set();
-            if (p.memberId) paidStudentsMap[p.sportId].add(p.memberId);
+            const assignedCoachId = p.memberId ? memberCoachMap[`${p.memberId}_${p.sportId}`] : null;
+            if (assignedCoachId) {
+              incomeMapByCoach[assignedCoachId] = (incomeMapByCoach[assignedCoachId] || 0) + Number(p.amount);
+              
+              if (!paidStudentsMapByCoach[assignedCoachId]) paidStudentsMapByCoach[assignedCoachId] = new Set();
+              if (p.memberId) paidStudentsMapByCoach[assignedCoachId].add(p.memberId);
+            }
           }
         });
         
-        setSportsIncome(incomeMap);
+        setCoachIncome(incomeMapByCoach);
         
         const counts: Record<string, number> = {};
-        Object.entries(paidStudentsMap).forEach(([sportId, membersSet]) => {
-          counts[sportId] = membersSet.size;
+        Object.entries(paidStudentsMapByCoach).forEach(([coachId, membersSet]) => {
+          counts[coachId] = membersSet.size;
         });
         setPaidStudentsCount(counts);
       }
@@ -144,8 +153,8 @@ export default function CoachesPage() {
   };
 
   const calculateCoachSalary = (coach: any) => {
-    const sportIncome = coach.sportId ? (sportsIncome[coach.sportId] || 0) : 0;
-    const percentageAmount = coach.CoachsalaryPercentage ? (sportIncome * (coach.CoachsalaryPercentage / 100)) : 0;
+    const coachIncomeAmt = coachIncome[coach.id] || 0;
+    const percentageAmount = coach.CoachsalaryPercentage ? (coachIncomeAmt * (coach.CoachsalaryPercentage / 100)) : 0;
     const total = (coach.baseSalary || 0) + percentageAmount;
     return {
       base: coach.baseSalary || 0,
@@ -236,7 +245,7 @@ export default function CoachesPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         
         {/* Total Salaries Card */}
-        <div className="lg:col-span-8 bg-[#5A0B1A] rounded-[28px] p-8 text-white relative overflow-hidden shadow-xl border border-[#8A1538]/20 group">
+        <div className="lg:col-span-8 bg-tertiary rounded-[28px] p-8 text-white relative overflow-hidden shadow-xl border border-primary/20 group">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl group-hover:bg-white/10 transition-all duration-700"></div>
           
           <div className="relative z-10 flex flex-col h-full justify-between">
@@ -244,13 +253,13 @@ export default function CoachesPage() {
               <p className="text-white/60 text-xs font-bold tracking-[0.15em] uppercase">إجمالي الرواتب الشهرية</p>
               <div className="flex items-baseline gap-2">
                 <span className="text-5xl font-black leading-none tracking-tighter" dir="ltr">{totalSalaries.toLocaleString()}</span>
-                <span className="text-[#C5A059] font-bold text-sm">ر.ق</span>
+                <span className="text-secondary font-bold text-sm">ر.ق</span>
               </div>
             </div>
 
             <div className="mt-8 bg-black/20 backdrop-blur-md rounded-2xl p-4 border border-white/10 flex items-center gap-4 w-fit">
               <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-[#C5A059]" />
+                <Calendar className="w-5 h-5 text-secondary" />
               </div>
               <div>
                 <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider">تاريخ الصرف القادم</p>
@@ -261,10 +270,10 @@ export default function CoachesPage() {
         </div>
 
         {/* Total Coaches Card */}
-        <div className="lg:col-span-4 bg-white rounded-[28px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex flex-col justify-between group hover:border-[#C5A059]/30 transition-all">
+        <div className="lg:col-span-4 bg-white rounded-[28px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex flex-col justify-between group hover:border-secondary/30 transition-all">
           <div className="flex justify-between items-start">
-            <div className="w-14 h-14 rounded-2xl bg-[#FDF8F9] flex items-center justify-center border border-[#8A1538]/10 group-hover:scale-110 transition-transform">
-              <Users className="w-7 h-7 text-[#8A1538]" />
+            <div className="w-14 h-14 rounded-2xl bg-[#FDF8F9] flex items-center justify-center border border-primary/10 group-hover:scale-110 transition-transform">
+              <Users className="w-7 h-7 text-primary" />
             </div>
             <div className="text-emerald-500 bg-emerald-50 px-3 py-1 rounded-full text-[10px] font-black tracking-widest">+2 هذا الشهر</div>
           </div>
@@ -272,7 +281,7 @@ export default function CoachesPage() {
           <div>
             <p className="text-gray-400 text-[11px] font-bold tracking-widest uppercase mb-1">إجمالي المدربين</p>
             <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-black text-[#5A0B1A]">{coaches.length}</span>
+              <span className="text-4xl font-black text-tertiary">{coaches.length}</span>
               <span className="text-gray-400 font-bold text-xs capitalize">مدرب معتمد</span>
             </div>
           </div>
@@ -288,20 +297,20 @@ export default function CoachesPage() {
             placeholder="البحث عن مدرب..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-white border border-gray-100 rounded-full py-3 pr-10 pl-4 text-sm font-bold focus:ring-2 focus:ring-[#8A1538]/10 focus:border-[#8A1538] transition-all outline-none"
+            className="w-full bg-white border border-gray-100 rounded-full py-3 pr-10 pl-4 text-sm font-bold focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all outline-none"
           />
         </div>
         
         <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar max-w-full">
           <button 
             onClick={() => setActiveSportFilter("الكل")}
-            className={`px-6 py-2.5 rounded-full text-xs font-black transition-all ${activeSportFilter === "الكل" ? 'bg-[#5A0B1A] text-white shadow-lg' : 'bg-white text-gray-500 hover:bg-gray-50'}`}
+            className={`px-6 py-2.5 rounded-full text-xs font-black transition-all ${activeSportFilter === "الكل" ? 'bg-tertiary text-white shadow-lg' : 'bg-white text-gray-500 hover:bg-gray-50'}`}
           >الكل</button>
           {sports.map(s => (
             <button 
               key={s.id}
               onClick={() => setActiveSportFilter(s.name)}
-              className={`px-6 py-2.5 rounded-full text-xs font-black whitespace-nowrap transition-all ${activeSportFilter === s.name ? 'bg-[#5A0B1A] text-white shadow-lg' : 'bg-white text-gray-500 hover:bg-gray-50'}`}
+              className={`px-6 py-2.5 rounded-full text-xs font-black whitespace-nowrap transition-all ${activeSportFilter === s.name ? 'bg-tertiary text-white shadow-lg' : 'bg-white text-gray-500 hover:bg-gray-50'}`}
             >{s.name}</button>
           ))}
         </div>
@@ -310,8 +319,8 @@ export default function CoachesPage() {
       {/* === COACH CARDS GRID === */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 bg-white/30 backdrop-blur-md rounded-[28px] border border-white">
-          <Loader2 className="w-10 h-10 animate-spin text-[#8A1538] mb-4" />
-          <p className="text-sm font-bold text-[#5A0B1A]/60">جاري تحميل بيانات الكباتن...</p>
+          <Loader2 className="w-10 h-10 animate-spin text-primary mb-4" />
+          <p className="text-sm font-bold text-tertiary/60">جاري تحميل بيانات الكباتن...</p>
         </div>
       ) : errorMsg ? (
         <div className="text-center py-20 bg-rose-50/80 backdrop-blur-md rounded-[28px] border-2 border-rose-200">
@@ -329,18 +338,18 @@ export default function CoachesPage() {
             const salary = calculateCoachSalary(coach);
             return (
               <div key={coach.id} className="bg-white rounded-[28px] p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100/50 flex flex-col relative group transition-all hover:shadow-xl hover:-translate-y-1 overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-[#C5A059]/5 rounded-bl-[100px] -z-10"></div>
-                <div className="absolute bottom-0 left-0 w-40 h-40 bg-[#8A1538]/5 rounded-tr-[100px] -z-10"></div>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-bl-[100px] -z-10"></div>
+                <div className="absolute bottom-0 left-0 w-40 h-40 bg-primary/5 rounded-tr-[100px] -z-10"></div>
                 
                 {/* Card Header: Avatar & Name */}
                 <div className="flex justify-between items-start mb-6">
                   <div className="flex flex-col">
                     <div className="bg-[#fcecc2] text-[#bc8c20] px-3 py-1 rounded-full text-[10px] font-black tracking-widest w-fit mb-2 shadow-sm border border-[#bc8c20]/10">كابتن معتمد</div>
-                    <h3 className="text-[#5A0B1A] text-lg font-black leading-tight font-almarai">ك. {coach.fullName}</h3>
+                    <h3 className="text-tertiary text-lg font-black leading-tight font-almarai">ك. {coach.fullName}</h3>
                     <div className="flex items-center gap-2 mt-1">
-                      <div className="w-2 h-2 rounded-full bg-[#C5A059] shadow-[0_0_5px_rgba(197,160,89,0.5)]"></div>
+                      <div className="w-2 h-2 rounded-full bg-secondary shadow-[0_0_5px_rgba(197,160,89,0.5)]"></div>
                       <p className="text-[11px] text-gray-400 font-bold tracking-wide uppercase">
-                        {coach.Sport?.name || "عام"} · {paidStudentsCount[coach.sportId] || 0} مدفوع / {sportsCount[coach.sportId] || 0} مسجل
+                        {coach.Sport?.name || "عام"} · {paidStudentsCount[coach.id] || 0} مدفوع / {coachStudentsCount[coach.id] || 0} مسجل
                       </p>
                     </div>
                   </div>
@@ -368,13 +377,13 @@ export default function CoachesPage() {
                 <div className="grid grid-cols-3 gap-2 mb-6">
                   <div className="bg-[#F5F5F7] rounded-2xl p-3 flex flex-col items-center justify-center">
                     <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter mb-1">الأساسي</span>
-                    <span className="text-sm font-black text-[#5A0B1A]">{salary.base.toLocaleString()}</span>
+                    <span className="text-sm font-black text-tertiary">{salary.base.toLocaleString()}</span>
                   </div>
                   <div className="bg-[#F5F5F7] rounded-2xl p-3 flex flex-col items-center justify-center">
                     <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter mb-1">الحوافز</span>
                     <span className="text-sm font-black text-[#bc8c20]">{salary.incentives.toLocaleString()}</span>
                   </div>
-                  <div className="bg-[#8A1538] rounded-2xl p-3 flex flex-col items-center justify-center shadow-lg shadow-[#8A1538]/20">
+                  <div className="bg-primary rounded-2xl p-3 flex flex-col items-center justify-center shadow-lg shadow-primary/20">
                     <span className="text-[9px] font-bold text-white/50 uppercase tracking-tighter mb-1">الإجمالي</span>
                     <span className="text-sm font-black text-white">{salary.total.toLocaleString()}</span>
                   </div>
@@ -409,11 +418,11 @@ export default function CoachesPage() {
                       });
                       setShowModal(true);
                     }}
-                    className="flex-1 bg-[#F5F5F7] hover:bg-gray-100 text-[#5A0B1A] py-3.5 rounded-[18px] font-black text-xs transition-all flex items-center justify-center gap-2"
+                    className="flex-1 bg-[#F5F5F7] hover:bg-gray-100 text-tertiary py-3.5 rounded-[18px] font-black text-xs transition-all flex items-center justify-center gap-2"
                   >
                     تعديل البيانات
                   </button>
-                  <button className="w-14 h-14 bg-white border border-gray-100 rounded-[18px] flex items-center justify-center text-gray-400 hover:text-[#8A1538] hover:bg-[#FDF8F9] transition-all">
+                  <button className="w-14 h-14 bg-white border border-gray-100 rounded-[18px] flex items-center justify-center text-gray-400 hover:text-primary hover:bg-[#FDF8F9] transition-all">
                     <Eye className="w-5 h-5" />
                   </button>
                 </div>
@@ -440,7 +449,7 @@ export default function CoachesPage() {
           setForm({ fullName: "", phone: "", sportId: "", baseSalary: "", CoachsalaryPercentage: "", note: "", photoUrl: "" });
           setShowModal(true);
         }}
-        className="fixed bottom-10 left-10 w-16 h-16 bg-[#C5A059] text-white rounded-[24px] shadow-2xl flex items-center justify-center hover:scale-110 hover:shadow-[#C5A059]/40 active:scale-95 transition-all z-40 group"
+        className="fixed bottom-10 left-10 w-16 h-16 bg-secondary text-white rounded-[24px] shadow-2xl flex items-center justify-center hover:scale-110 hover:shadow-secondary/40 active:scale-95 transition-all z-40 group"
       >
         <Plus className="w-8 h-8 group-hover:rotate-90 transition-transform duration-300" />
       </button>
@@ -451,7 +460,7 @@ export default function CoachesPage() {
           <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
             <div className="bg-[#FDF8F9] px-8 py-6 border-b border-gray-100 flex items-center justify-between">
                <div>
-                 <h2 className="text-xl font-black text-[#5A0B1A]">{editingCoach ? "تعديل بيانات الكابتن" : "إضافة مدرب جديد"}</h2>
+                 <h2 className="text-xl font-black text-tertiary">{editingCoach ? "تعديل بيانات الكابتن" : "إضافة مدرب جديد"}</h2>
                  <p className="text-xs text-gray-400 font-bold tracking-widest uppercase mt-0.5">سجل المدربين والرواتب</p>
                </div>
                <button onClick={() => setShowModal(false)} className="p-3 bg-white text-gray-400 hover:text-rose-500 rounded-2xl shadow-sm transition-all">
@@ -473,10 +482,10 @@ export default function CoachesPage() {
                     <UploadCloud className="w-5 h-5 text-white" />
                     <input type="file" className="hidden" accept="image/*" onChange={handlePhotoUpload} disabled={uploadingPhoto} />
                   </label>
-                  {uploadingPhoto && <div className="absolute inset-0 bg-white/80 flex items-center justify-center"><Loader2 className="w-5 h-5 animate-spin text-[#8A1538]" /></div>}
+                  {uploadingPhoto && <div className="absolute inset-0 bg-white/80 flex items-center justify-center"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>}
                 </div>
                 <div>
-                  <h3 className="text-[#5A0B1A] font-black text-sm">صورة المدرب</h3>
+                  <h3 className="text-tertiary font-black text-sm">صورة المدرب</h3>
                   <p className="text-xs text-gray-400 font-bold mt-1">اضغط على المربع لاختيار صورة</p>
                 </div>
               </div>
@@ -488,7 +497,7 @@ export default function CoachesPage() {
                     type="text" 
                     value={form.fullName} 
                     onChange={e => setForm({...form, fullName: e.target.value})}
-                    className="w-full bg-[#F5F5F7] border-transparent focus:bg-white focus:border-[#8A1538]/20 focus:ring-4 focus:ring-[#8A1538]/5 rounded-2xl px-5 py-3.5 text-sm font-bold text-[#5A0B1A] transition-all outline-none"
+                    className="w-full bg-[#F5F5F7] border-transparent focus:bg-white focus:border-primary/20 focus:ring-4 focus:ring-primary/5 rounded-2xl px-5 py-3.5 text-sm font-bold text-tertiary transition-all outline-none"
                     placeholder="ك. أحمد محمد"
                   />
                 </div>
@@ -500,7 +509,7 @@ export default function CoachesPage() {
                       type="tel" 
                       value={form.phone} 
                       onChange={e => setForm({...form, phone: e.target.value})}
-                      className="w-full bg-[#F5F5F7] border-transparent focus:bg-white focus:border-[#8A1538]/20 focus:ring-4 focus:ring-[#8A1538]/5 rounded-2xl px-5 py-3.5 text-sm font-bold text-[#5A0B1A] transition-all outline-none"
+                      className="w-full bg-[#F5F5F7] border-transparent focus:bg-white focus:border-primary/20 focus:ring-4 focus:ring-primary/5 rounded-2xl px-5 py-3.5 text-sm font-bold text-tertiary transition-all outline-none"
                       placeholder="5500XXXX"
                     />
                   </div>
@@ -510,7 +519,7 @@ export default function CoachesPage() {
                       type="number" 
                       value={form.baseSalary} 
                       onChange={e => setForm({...form, baseSalary: e.target.value})}
-                      className="w-full bg-[#F5F5F7] border-transparent focus:bg-white focus:border-[#8A1538]/20 focus:ring-4 focus:ring-[#8A1538]/5 rounded-2xl px-5 py-3.5 text-sm font-bold text-[#5A0B1A] transition-all outline-none"
+                      className="w-full bg-[#F5F5F7] border-transparent focus:bg-white focus:border-primary/20 focus:ring-4 focus:ring-primary/5 rounded-2xl px-5 py-3.5 text-sm font-bold text-tertiary transition-all outline-none"
                       placeholder="0.00"
                     />
                   </div>
@@ -522,7 +531,7 @@ export default function CoachesPage() {
                     <select 
                       value={form.sportId} 
                       onChange={e => setForm({...form, sportId: e.target.value})}
-                      className="w-full bg-[#F5F5F7] border-transparent focus:bg-white focus:border-[#8A1538]/20 focus:ring-4 focus:ring-[#8A1538]/5 rounded-2xl px-5 py-3.5 text-sm font-bold text-[#5A0B1A] transition-all outline-none appearance-none"
+                      className="w-full bg-[#F5F5F7] border-transparent focus:bg-white focus:border-primary/20 focus:ring-4 focus:ring-primary/5 rounded-2xl px-5 py-3.5 text-sm font-bold text-tertiary transition-all outline-none appearance-none"
                     >
                       <option value="">عام (بدون تخصص)</option>
                       {sports.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -535,7 +544,7 @@ export default function CoachesPage() {
                       step="0.1" 
                       value={form.CoachsalaryPercentage} 
                       onChange={e => setForm({...form, CoachsalaryPercentage: e.target.value})}
-                      className="w-full bg-[#F5F5F7] border-transparent focus:bg-white focus:border-[#8A1538]/20 focus:ring-4 focus:ring-[#8A1538]/5 rounded-2xl px-5 py-3.5 text-sm font-bold text-[#5A0B1A] transition-all outline-none"
+                      className="w-full bg-[#F5F5F7] border-transparent focus:bg-white focus:border-primary/20 focus:ring-4 focus:ring-primary/5 rounded-2xl px-5 py-3.5 text-sm font-bold text-tertiary transition-all outline-none"
                       placeholder="50%"
                     />
                   </div>
@@ -547,7 +556,7 @@ export default function CoachesPage() {
                     rows={2} 
                     value={form.note} 
                     onChange={e => setForm({...form, note: e.target.value})}
-                    className="w-full bg-[#F5F5F7] border-transparent focus:bg-white focus:border-[#8A1538]/20 focus:ring-4 focus:ring-[#8A1538]/5 rounded-2xl px-5 py-3.5 text-sm font-bold text-[#5A0B1A] transition-all outline-none resize-none"
+                    className="w-full bg-[#F5F5F7] border-transparent focus:bg-white focus:border-primary/20 focus:ring-4 focus:ring-primary/5 rounded-2xl px-5 py-3.5 text-sm font-bold text-tertiary transition-all outline-none resize-none"
                     placeholder="أي معلومات إضافية عن المدرب..."
                   />
                 </div>
@@ -562,7 +571,7 @@ export default function CoachesPage() {
                <button 
                  onClick={handleSave} 
                  disabled={saving || uploadingPhoto}
-                 className="flex-[2] bg-[#8A1538] text-white py-4 rounded-2xl font-black text-xs hover:bg-[#5A0B1A] shadow-xl shadow-[#8A1538]/20 flex items-center justify-center gap-3 disabled:opacity-50 transition-all"
+                 className="flex-[2] bg-primary text-white py-4 rounded-2xl font-black text-xs hover:bg-tertiary shadow-xl shadow-primary/20 flex items-center justify-center gap-3 disabled:opacity-50 transition-all"
                >
                  {(saving || uploadingPhoto) ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
                  {editingCoach ? "حفظ التعديلات" : "إضافة الكابتن"}

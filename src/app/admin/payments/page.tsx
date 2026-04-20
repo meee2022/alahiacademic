@@ -205,6 +205,9 @@ export default function PaymentsPage() {
       }
     } else {
       acc.expenses += amt;
+      const isBank = ["transferATM", "bankDeposit", "cardMachine"].includes(p.method);
+      if (p.method === "cash") acc.cash -= amt;
+      if (isBank) acc.bank -= amt;
     }
     return acc;
   }, { cash: 0, bank: 0, transfers: 0, belts: 0, expenses: 0, income: 0, equipTotal: 0, equipCash: 0, equipBank: 0 });
@@ -237,7 +240,7 @@ export default function PaymentsPage() {
 
       {/* Print-Only Custom Header */}
       <div className="hidden print:block text-center mb-8 border-b-2 border-gray-100 pb-6">
-        <h1 className="text-2xl font-black text-[#5A0B1A] mb-2">تقرير مالية الأكاديمية</h1>
+        <h1 className="text-2xl font-black text-tertiary mb-2">تقرير مالية الأكاديمية</h1>
         <p className="text-gray-500 font-bold text-sm">
           {startDate && endDate ? `الفترة: من ${startDate} إلى ${endDate}` :
             startDate ? `من تاريخ: ${startDate}` :
@@ -251,7 +254,7 @@ export default function PaymentsPage() {
       <div className="flex justify-between items-center mb-6 print:hidden">
         <div className="flex items-center gap-4">
           <Menu className="w-6 h-6 text-gray-800 cursor-pointer" />
-          <h1 className="text-2xl font-black text-[#5A0B1A]">نظرة عامة على الحسابات</h1>
+          <h1 className="text-2xl font-black text-tertiary">نظرة عامة على الحسابات</h1>
         </div>
         <div className="flex items-center gap-3">
           <button 
@@ -275,14 +278,14 @@ export default function PaymentsPage() {
           <div>
             <div className="flex justify-between items-start mb-3 relative z-10">
               <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center">
-                <TrendingUp className="w-4 h-4 text-[#8A1538]" />
+                <TrendingUp className="w-4 h-4 text-primary" />
               </div>
-              <span className="text-[10px] font-bold tracking-widest text-[#8A1538] uppercase mt-1">الإجمالي</span>
+              <span className="text-[10px] font-bold tracking-widest text-primary uppercase mt-1">الإجمالي</span>
             </div>
             <div className="text-gray-500 text-sm font-medium mb-1 relative z-10">إجمالي الإيرادات</div>
             <div className="flex items-baseline gap-1.5 mb-1 relative z-10">
               <span className="text-3xl font-black text-gray-900">{totals.income.toLocaleString()}</span>
-              <span className="text-xs font-bold text-[#8A1538]">ر.ق</span>
+              <span className="text-xs font-bold text-primary">ر.ق</span>
             </div>
           </div>
         </div>
@@ -306,10 +309,10 @@ export default function PaymentsPage() {
         </div>
 
         {/* NET PROFIT */}
-        <div className="bg-[#5A0B1A] rounded-3xl p-5 shadow-xl shadow-[#5A0B1A]/20 relative overflow-hidden flex flex-col justify-between text-white print:shadow-none">
+        <div className="bg-tertiary rounded-3xl p-5 shadow-xl shadow-tertiary/20 relative overflow-hidden flex flex-col justify-between text-white print:shadow-none">
           <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
           <div className="absolute top-0 bottom-0 left-0 w-1/4 bg-white/5 blur-2xl skew-x-12"></div>
-          <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#8A1538] rounded-full"></div>
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary rounded-full"></div>
           <div>
             <div className="flex justify-between items-start mb-3 relative z-10">
               <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center shadow-inner">
@@ -326,7 +329,7 @@ export default function PaymentsPage() {
           <div className="flex items-center gap-2 mt-auto relative z-10">
             <div className="flex -space-x-1">
               <div className="w-4 h-4 rounded-full bg-[#c19951]/90"></div>
-              <div className="w-4 h-4 rounded-full bg-[#a0743b]/80 border border-[#5A0B1A]"></div>
+              <div className="w-4 h-4 rounded-full bg-[#a0743b]/80 border border-tertiary"></div>
             </div>
             <span className="text-[10px] text-white/60">يُحسب يومياً</span>
           </div>
@@ -403,7 +406,7 @@ export default function PaymentsPage() {
               placeholder="البحث في المعاملات..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-[#F5F5F7] border border-gray-100 rounded-2xl py-3.5 pr-12 pl-4 text-sm focus:ring-2 focus:ring-[#8A1538]/20 outline-none placeholder:text-gray-400 font-medium"
+              className="w-full bg-[#F5F5F7] border border-gray-100 rounded-2xl py-3.5 pr-12 pl-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none placeholder:text-gray-400 font-medium"
             />
           </div>
           <div className="flex items-center bg-[#F5F5F7] border border-gray-100 rounded-2xl px-3 py-2 gap-2 overflow-x-auto">
@@ -412,14 +415,14 @@ export default function PaymentsPage() {
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="bg-transparent border-none outline-none text-[11px] font-bold text-[#8A1538] cursor-pointer"
+              className="bg-transparent border-none outline-none text-[11px] font-bold text-primary cursor-pointer"
             />
             <span className="text-gray-400 text-[10px] font-bold whitespace-nowrap">إلى:</span>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="bg-transparent border-none outline-none text-[11px] font-bold text-[#8A1538] cursor-pointer"
+              className="bg-transparent border-none outline-none text-[11px] font-bold text-primary cursor-pointer"
             />
             {(startDate || endDate) && (
               <button onClick={() => { setStartDate(""); setEndDate(""); }} className="mr-1 text-gray-400 hover:text-rose-500 transition-colors shrink-0">
@@ -429,10 +432,10 @@ export default function PaymentsPage() {
           </div>
         </div>
         <div className="flex flex-wrap sm:flex-nowrap gap-3">
-          <button onClick={() => openModal("income")} className="flex-1 min-w-[140px] bg-[#5A0B1A] hover:bg-[#3d0611] text-white py-3.5 rounded-2xl flex items-center justify-center gap-2 font-bold text-xs transition-colors shadow-md shadow-[#5A0B1A]/20">
+          <button onClick={() => openModal("income")} className="flex-1 min-w-[140px] bg-tertiary hover:bg-[#3d0611] text-white py-3.5 rounded-2xl flex items-center justify-center gap-2 font-bold text-xs transition-colors shadow-md shadow-tertiary/20">
             <Plus className="w-4 h-4" /> إضافة إيراد
           </button>
-          <button onClick={() => openModal("expense")} className="flex-1 min-w-[140px] bg-white border border-gray-100 text-[#5A0B1A] hover:bg-rose-50 py-3.5 rounded-2xl flex items-center justify-center gap-2 font-bold text-xs transition-colors shadow-sm">
+          <button onClick={() => openModal("expense")} className="flex-1 min-w-[140px] bg-white border border-gray-100 text-tertiary hover:bg-rose-50 py-3.5 rounded-2xl flex items-center justify-center gap-2 font-bold text-xs transition-colors shadow-sm">
             <span className="text-lg leading-none mb-0.5">-</span> إضافة مصروف
           </button>
           <button onClick={handleExportCSV} className="w-[52px] bg-white border border-gray-100 text-gray-500 hover:bg-gray-50 rounded-2xl flex items-center justify-center transition-colors shadow-sm shrink-0">
@@ -474,7 +477,7 @@ export default function PaymentsPage() {
                       {isIncome ? <ArrowDownLeft className="w-6 h-6" /> : <ArrowUpRight className="w-6 h-6" />}
                     </div>
                     <div>
-                       <div className="font-bold text-gray-900 text-base mb-1 group-hover:text-[#5A0B1A] transition-colors">{payment.description || (isIncome ? "إيراد عام" : "مصروف عام")}</div>
+                       <div className="font-bold text-gray-900 text-base mb-1 group-hover:text-tertiary transition-colors">{payment.description || (isIncome ? "إيراد عام" : "مصروف عام")}</div>
                        {payment.Member ? (
                          <div className="flex items-center gap-2 text-sm text-gray-500 font-medium">
                            <span className="w-2 h-2 rounded-full bg-[#c19951]"></span>
@@ -506,7 +509,7 @@ export default function PaymentsPage() {
                     <button
                       onClick={(e) => { e.stopPropagation(); router.push(`/admin/receipts/${payment.id}`); }}
                       title="طباعة الإيصال"
-                      className="print:hidden w-9 h-9 rounded-xl bg-[#5A0B1A] hover:bg-[#8A1538] text-white flex items-center justify-center shrink-0 shadow-sm transition-colors"
+                      className="print:hidden w-9 h-9 rounded-xl bg-tertiary hover:bg-primary text-white flex items-center justify-center shrink-0 shadow-sm transition-colors"
                     >
                       <Printer className="w-4 h-4" />
                     </button>

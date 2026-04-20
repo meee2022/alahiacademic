@@ -248,7 +248,7 @@ export default function InventoryPage() {
   return (
     <div className="space-y-6 pb-20 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="bg-[#5A0B1A] rounded-[28px] p-8 text-white relative overflow-hidden shadow-xl flex items-center justify-between">
+      <div className="bg-tertiary rounded-[28px] p-8 text-white relative overflow-hidden shadow-xl flex items-center justify-between">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
         <div className="relative z-10">
           <p className="text-white/50 text-[11px] font-bold tracking-[0.2em] uppercase mb-2">لوحة التحكم</p>
@@ -256,7 +256,7 @@ export default function InventoryPage() {
           <p className="text-white/60 text-sm font-medium mt-1">إدارة مخزون الملابس والأدوات الرياضية وحساب التكاليف والأرباح</p>
         </div>
         <div className="w-16 h-16 rounded-[20px] bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10 relative z-10 shrink-0 hidden md:flex">
-          <Package className="w-8 h-8 text-[#C5A059]" />
+          <Package className="w-8 h-8 text-secondary" />
         </div>
       </div>
 
@@ -270,7 +270,7 @@ export default function InventoryPage() {
             <span className="text-xs font-bold text-gray-400 bg-gray-50 px-2.5 py-1 rounded-lg">إجمالي المنتجات</span>
           </div>
           <div className="space-y-1">
-            <h3 className="text-3xl font-black text-[#8A1538]">{totalItemsCount}</h3>
+            <h3 className="text-3xl font-black text-primary">{totalItemsCount}</h3>
             <p className="text-xs font-bold text-gray-500">قطعة متوفرة حالياً بالمنشأة</p>
           </div>
         </div>
@@ -283,34 +283,34 @@ export default function InventoryPage() {
             <span className="text-xs font-bold text-gray-400 bg-gray-50 px-2.5 py-1 rounded-lg">إجمالي تكلفة المخزون</span>
           </div>
           <div className="space-y-1">
-            <h3 className="text-3xl font-black text-[#8A1538]">{totalCostValue.toLocaleString()} ر.ق</h3>
+            <h3 className="text-3xl font-black text-primary">{totalCostValue.toLocaleString()} ر.ق</h3>
             <p className="text-xs font-bold text-gray-500">مجموع أسعار الشراء من المصنع</p>
           </div>
         </div>
 
         <div className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100/80 flex flex-col transition-all hover:-translate-y-1 hover:shadow-md cursor-default">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 rounded-2xl bg-[#C5A059]/10 flex items-center justify-center text-[#C5A059]">
+            <div className="w-12 h-12 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary">
               <TrendingUp className="w-6 h-6" />
             </div>
             <span className="text-xs font-bold text-gray-400 bg-gray-50 px-2.5 py-1 rounded-lg">توقعات المبيعات الحالية</span>
           </div>
           <div className="space-y-1">
-            <h3 className="text-3xl font-black text-[#5A0B1A]">{totalSalesValue.toLocaleString()} ر.ق</h3>
+            <h3 className="text-3xl font-black text-tertiary">{totalSalesValue.toLocaleString()} ر.ق</h3>
             <p className="text-xs font-bold text-gray-500">القيمة الإجمالية في حال بيع الكل</p>
           </div>
         </div>
 
-        <div className="bg-[#8A1538] text-white rounded-[24px] p-6 shadow-lg shadow-[#8A1538]/20 flex flex-col transition-all hover:-translate-y-1 hover:shadow-xl cursor-default relative overflow-hidden">
+        <div className="bg-primary text-white rounded-[24px] p-6 shadow-lg shadow-primary/20 flex flex-col transition-all hover:-translate-y-1 hover:shadow-xl cursor-default relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
           <div className="flex items-center justify-between mb-4 relative z-10">
-            <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-[#C5A059]">
+            <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-secondary">
               <Percent className="w-6 h-6" />
             </div>
             <span className="text-xs font-bold text-white/70 bg-black/20 px-2.5 py-1 rounded-lg backdrop-blur-sm border border-white/5">الأرباح المتوقعة</span>
           </div>
           <div className="space-y-1 relative z-10">
-            <h3 className="text-3xl font-black text-[#C5A059]">{expectedProfit.toLocaleString()} ر.ق</h3>
+            <h3 className="text-3xl font-black text-secondary">{expectedProfit.toLocaleString()} ر.ق</h3>
             <p className="text-xs font-bold text-white/60">صافي الأرباح للمخزون المتبقي</p>
           </div>
         </div>
@@ -320,14 +320,14 @@ export default function InventoryPage() {
       <div className="flex bg-white rounded-2xl p-1.5 shadow-sm border border-gray-100 max-w-fit mt-4">
         <button
           onClick={() => setActiveTab("inventory")}
-          className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${activeTab === "inventory" ? "bg-[#8A1538] text-white shadow-md" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"}`}
+          className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${activeTab === "inventory" ? "bg-primary text-white shadow-md" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"}`}
         >
           <Box className="w-4 h-4" />
           مخزون المنتجات
         </button>
         <button
           onClick={() => setActiveTab("sales")}
-          className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${activeTab === "sales" ? "bg-[#8A1538] text-white shadow-md" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"}`}
+          className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${activeTab === "sales" ? "bg-primary text-white shadow-md" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"}`}
         >
           <ListOrdered className="w-4 h-4" />
           سجل المبيعات
@@ -344,7 +344,7 @@ export default function InventoryPage() {
           </div>
           <input
             type="text"
-            className="block w-full rounded-2xl border-0 py-3.5 pr-11 pl-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-200 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#8A1538] font-medium transition-all"
+            className="block w-full rounded-2xl border-0 py-3.5 pr-11 pl-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-200 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary font-medium transition-all"
             placeholder="ابحث عن منتج بالاسم أو المقاس..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -352,7 +352,7 @@ export default function InventoryPage() {
         </div>
         <button
           onClick={() => openModal()}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#8A1538] hover:bg-[#5A0B1A] text-white px-6 py-3.5 rounded-2xl font-bold transition-all shadow-md shadow-[#8A1538]/20 active:scale-95 whitespace-nowrap"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-primary hover:bg-tertiary text-white px-6 py-3.5 rounded-2xl font-bold transition-all shadow-md shadow-primary/20 active:scale-95 whitespace-nowrap"
         >
           <Plus className="w-5 h-5" />
           إضافة بضاعة جديدة
@@ -365,12 +365,12 @@ export default function InventoryPage() {
           <table className="w-full text-right border-collapse">
             <thead>
               <tr className="bg-[#F8F9FA] border-b border-gray-100">
-                <th className="py-5 px-6 font-black text-[#5A0B1A] text-sm whitespace-nowrap uppercase tracking-wider w-[30%]">الاسم والمقاس</th>
-                <th className="py-5 px-4 font-black text-[#5A0B1A] text-sm whitespace-nowrap uppercase tracking-wider text-center">التكلفة للقطعة</th>
-                <th className="py-5 px-4 font-black text-[#5A0B1A] text-sm whitespace-nowrap uppercase tracking-wider text-center">سعر البيع</th>
-                <th className="py-5 px-4 font-black text-[#5A0B1A] text-sm whitespace-nowrap uppercase tracking-wider text-center">الكمية</th>
-                <th className="py-5 px-4 font-black text-[#5A0B1A] text-sm whitespace-nowrap uppercase tracking-wider text-center">الربح الصافي</th>
-                <th className="py-5 px-6 font-black text-[#5A0B1A] text-sm whitespace-nowrap uppercase tracking-wider text-center w-[15%]">الإجراءات</th>
+                <th className="py-5 px-6 font-black text-tertiary text-sm whitespace-nowrap uppercase tracking-wider w-[30%]">الاسم والمقاس</th>
+                <th className="py-5 px-4 font-black text-tertiary text-sm whitespace-nowrap uppercase tracking-wider text-center">التكلفة للقطعة</th>
+                <th className="py-5 px-4 font-black text-tertiary text-sm whitespace-nowrap uppercase tracking-wider text-center">سعر البيع</th>
+                <th className="py-5 px-4 font-black text-tertiary text-sm whitespace-nowrap uppercase tracking-wider text-center">الكمية</th>
+                <th className="py-5 px-4 font-black text-tertiary text-sm whitespace-nowrap uppercase tracking-wider text-center">الربح الصافي</th>
+                <th className="py-5 px-6 font-black text-tertiary text-sm whitespace-nowrap uppercase tracking-wider text-center w-[15%]">الإجراءات</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50/80">
@@ -393,10 +393,10 @@ export default function InventoryPage() {
                     <td className="py-5 px-6">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0">
-                          <Box className="w-5 h-5 text-[#8A1538]/50" />
+                          <Box className="w-5 h-5 text-primary/50" />
                         </div>
                         <div>
-                          <div className="font-bold text-[#5A0B1A] text-[15px]">{item.name}</div>
+                          <div className="font-bold text-tertiary text-[15px]">{item.name}</div>
                           {item.size && (
                             <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] uppercase font-black tracking-widest bg-gray-100 text-gray-500">
                               المقاس: {item.size}
@@ -409,7 +409,7 @@ export default function InventoryPage() {
                       <span className="font-bold text-gray-600">{item.costPrice} ر.ق</span>
                     </td>
                     <td className="py-5 px-4 text-center">
-                      <span className="font-black text-[#8A1538]">{item.sellingPrice} ر.ق</span>
+                      <span className="font-black text-primary">{item.sellingPrice} ر.ق</span>
                     </td>
                     <td className="py-5 px-4 text-center">
                       <span className={`inline-flex items-center justify-center min-w-[3rem] px-2 py-1 rounded-lg font-black text-sm ${
@@ -431,7 +431,7 @@ export default function InventoryPage() {
                         <button 
                           onClick={() => openSellModal(item)}
                           disabled={item.quantity === 0}
-                          className="px-3 h-9 flex items-center justify-center gap-1 rounded-xl bg-[#8A1538]/5 text-[#8A1538] hover:bg-[#8A1538]/10 font-bold text-xs transition-all border border-[#8A1538]/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="px-3 h-9 flex items-center justify-center gap-1 rounded-xl bg-primary/5 text-primary hover:bg-primary/10 font-bold text-xs transition-all border border-primary/10 disabled:opacity-50 disabled:cursor-not-allowed"
                           title="بيع / صرف"
                         >
                           <DollarSign className="w-3.5 h-3.5" />
@@ -463,7 +463,7 @@ export default function InventoryPage() {
         <div className="bg-white rounded-[28px] shadow-[0_4px_24px_rgb(0,0,0,0.02)] border border-gray-100/50 overflow-hidden mt-6">
           <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
             <div>
-              <h2 className="text-lg font-black text-[#8A1538]">سجل المبيعات والأرباح الحقيقية</h2>
+              <h2 className="text-lg font-black text-primary">سجل المبيعات والأرباح الحقيقية</h2>
               <p className="text-gray-500 text-xs font-bold mt-1">يعرض السعر الفعلي الذي تم بيع القطع به.</p>
             </div>
             <div className="bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-100 flex items-center gap-2">
@@ -477,11 +477,11 @@ export default function InventoryPage() {
             <table className="w-full text-right border-collapse">
               <thead>
                 <tr className="bg-[#F8F9FA] border-b border-gray-100">
-                  <th className="py-5 px-6 font-black text-[#5A0B1A] text-sm whitespace-nowrap uppercase tracking-wider w-[35%]">المنتج المُباع</th>
-                  <th className="py-5 px-4 font-black text-[#5A0B1A] text-sm whitespace-nowrap uppercase tracking-wider text-center">الكمية</th>
-                  <th className="py-5 px-4 font-black text-[#5A0B1A] text-sm whitespace-nowrap uppercase tracking-wider text-center">السعر الفعلي للإجمالي</th>
-                  <th className="py-5 px-4 font-black text-[#5A0B1A] text-sm whitespace-nowrap uppercase tracking-wider text-center">صافي الربح المُحقق</th>
-                  <th className="py-5 px-6 font-black text-[#5A0B1A] text-sm whitespace-nowrap uppercase tracking-wider text-left">التاريخ</th>
+                  <th className="py-5 px-6 font-black text-tertiary text-sm whitespace-nowrap uppercase tracking-wider w-[35%]">المنتج المُباع</th>
+                  <th className="py-5 px-4 font-black text-tertiary text-sm whitespace-nowrap uppercase tracking-wider text-center">الكمية</th>
+                  <th className="py-5 px-4 font-black text-tertiary text-sm whitespace-nowrap uppercase tracking-wider text-center">السعر الفعلي للإجمالي</th>
+                  <th className="py-5 px-4 font-black text-tertiary text-sm whitespace-nowrap uppercase tracking-wider text-center">صافي الربح المُحقق</th>
+                  <th className="py-5 px-6 font-black text-tertiary text-sm whitespace-nowrap uppercase tracking-wider text-left">التاريخ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50/80">
@@ -508,7 +508,7 @@ export default function InventoryPage() {
                     return (
                       <tr key={sale.id} className="hover:bg-[#FDFDFD] transition-colors group">
                         <td className="py-5 px-6">
-                          <div className="font-bold text-[#5A0B1A] text-[15px]">{sale.item?.name || "منتج محذوف"}</div>
+                          <div className="font-bold text-tertiary text-[15px]">{sale.item?.name || "منتج محذوف"}</div>
                           {sale.item?.size && (
                             <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] uppercase font-black tracking-widest bg-gray-100 text-gray-500">
                               المقاس: {sale.item.size}
@@ -521,7 +521,7 @@ export default function InventoryPage() {
                           </span>
                         </td>
                         <td className="py-5 px-4 text-center">
-                          <span className="font-black text-[#8A1538]">{totalActualRevenue} ر.ق</span>
+                          <span className="font-black text-primary">{totalActualRevenue} ر.ق</span>
                           {sale.quantity > 1 && (
                             <div className="text-[10px] text-gray-400 font-bold mt-0.5">القطعة بـ {sale.actual_price} ر.ق</div>
                           )}
@@ -556,7 +556,7 @@ export default function InventoryPage() {
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={closeModal}></div>
           <div className="relative bg-white rounded-[32px] shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             {/* Modal Header */}
-            <div className="bg-[#5A0B1A] px-8 py-6 text-white flex justify-between items-center">
+            <div className="bg-tertiary px-8 py-6 text-white flex justify-between items-center">
               <div>
                 <h2 className="text-xl font-black">{editingItem ? "تعديل المنتج" : "إضافة بضاعة جديدة للمخزن"}</h2>
                 <p className="text-white/60 text-xs font-bold mt-1">
@@ -577,7 +577,7 @@ export default function InventoryPage() {
                   placeholder="مثال: بدلة كاراتيه ماركة Arawaza"
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-4 text-sm font-bold text-[#5A0B1A] focus:bg-white focus:ring-2 focus:ring-[#8A1538]/20 border border-transparent focus:border-[#8A1538]/30 outline-none transition-all placeholder:text-gray-400 placeholder:font-medium"
+                  className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-4 text-sm font-bold text-tertiary focus:bg-white focus:ring-2 focus:ring-primary/20 border border-transparent focus:border-primary/30 outline-none transition-all placeholder:text-gray-400 placeholder:font-medium"
                 />
               </div>
 
@@ -591,7 +591,7 @@ export default function InventoryPage() {
                       onClick={() => setFormData({...formData, size})}
                       className={`px-4 py-2 rounded-xl text-xs font-black tracking-widest transition-all border ${
                         formData.size === size 
-                          ? 'bg-[#8A1538] text-white border-[#8A1538]' 
+                          ? 'bg-primary text-white border-primary' 
                           : 'bg-white text-gray-500 hover:bg-gray-50 border-gray-200'
                       }`}
                     >
@@ -604,7 +604,7 @@ export default function InventoryPage() {
                   placeholder="أو اكتب مقاساً خاصاً (مثال: أطفال مقاس 2)"
                   value={formData.size}
                   onChange={(e) => setFormData({...formData, size: e.target.value})}
-                  className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-3 text-sm font-bold text-[#5A0B1A] focus:bg-white focus:ring-2 focus:ring-[#8A1538]/20 border border-transparent focus:border-[#8A1538]/30 outline-none transition-all placeholder:text-gray-400 placeholder:font-medium"
+                  className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-3 text-sm font-bold text-tertiary focus:bg-white focus:ring-2 focus:ring-primary/20 border border-transparent focus:border-primary/30 outline-none transition-all placeholder:text-gray-400 placeholder:font-medium"
                 />
               </div>
 
@@ -619,7 +619,7 @@ export default function InventoryPage() {
                       min="0"
                       value={formData.costPrice}
                       onChange={(e) => setFormData({...formData, costPrice: e.target.value})}
-                      className="w-full bg-[#FDF8F9] rounded-2xl px-5 py-4 pl-12 text-sm font-black text-[#8A1538] focus:bg-white focus:ring-2 focus:ring-[#8A1538]/20 border border-[#8A1538]/10 focus:border-[#8A1538]/30 outline-none transition-all"
+                      className="w-full bg-[#FDF8F9] rounded-2xl px-5 py-4 pl-12 text-sm font-black text-primary focus:bg-white focus:ring-2 focus:ring-primary/20 border border-primary/10 focus:border-primary/30 outline-none transition-all"
                       dir="ltr"
                     />
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-black text-gray-400 pointer-events-none">ر.ق</div>
@@ -651,7 +651,7 @@ export default function InventoryPage() {
                   min="0"
                   value={formData.quantity}
                   onChange={(e) => setFormData({...formData, quantity: e.target.value})}
-                  className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-4 text-sm font-black text-[#5A0B1A] focus:bg-white focus:ring-2 focus:ring-[#8A1538]/20 border border-transparent focus:border-[#8A1538]/30 outline-none transition-all"
+                  className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-4 text-sm font-black text-tertiary focus:bg-white focus:ring-2 focus:ring-primary/20 border border-transparent focus:border-primary/30 outline-none transition-all"
                   dir="ltr"
                 />
               </div>
@@ -660,7 +660,7 @@ export default function InventoryPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex-1 flex items-center justify-center gap-2 bg-[#8A1538] hover:bg-[#5A0B1A] text-white py-4 rounded-2xl font-black text-sm transition-all shadow-lg shadow-[#8A1538]/20 active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100"
+                  className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-tertiary text-white py-4 rounded-2xl font-black text-sm transition-all shadow-lg shadow-primary/20 active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100"
                 >
                   {saving ? "جاري الحفظ..." : (
                     <>
@@ -717,7 +717,7 @@ export default function InventoryPage() {
                   max={sellingItem.quantity}
                   value={sellFormData.quantity}
                   onChange={(e) => setSellFormData({...sellFormData, quantity: e.target.value})}
-                  className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-4 text-sm font-black text-[#5A0B1A] focus:bg-white focus:ring-2 focus:ring-[#1a365d]/20 border border-transparent focus:border-[#1a365d]/30 outline-none transition-all"
+                  className="w-full bg-[#F5F5F7] rounded-2xl px-5 py-4 text-sm font-black text-tertiary focus:bg-white focus:ring-2 focus:ring-[#1a365d]/20 border border-transparent focus:border-[#1a365d]/30 outline-none transition-all"
                   dir="ltr"
                 />
               </div>

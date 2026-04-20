@@ -61,7 +61,7 @@ export default function LeadsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-[#8A1538] mb-1">طلبات الانضمام</h1>
+          <h1 className="text-3xl font-extrabold text-primary mb-1">طلبات الانضمام</h1>
           <p className="text-sm font-medium text-gray-500">إدارة ومتابعة طلبات التسجيل الواردة من الموقع الإلكتروني.</p>
         </div>
       </div>
@@ -75,13 +75,13 @@ export default function LeadsPage() {
             placeholder="البحث بالاسم أو الرقم..." 
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="w-full pl-6 pr-12 py-3.5 border border-gray-200 rounded-full focus:ring-2 focus:ring-[#8A1538]/20 focus:border-[#8A1538] bg-[#F5F5F7] text-gray-900 font-medium transition-all"
+            className="w-full pl-6 pr-12 py-3.5 border border-gray-200 rounded-full focus:ring-2 focus:ring-primary/20 focus:border-primary bg-[#F5F5F7] text-gray-900 font-medium transition-all"
           />
         </div>
 
         {loading ? (
           <div className="flex justify-center p-12">
-            <Loader2 className="h-10 w-10 animate-spin text-[#8A1538]" />
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
           </div>
         ) : leads.length === 0 ? (
         <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-gray-100">
@@ -97,11 +97,11 @@ export default function LeadsPage() {
             <table className="w-full text-right whitespace-nowrap">
               <thead className="bg-[#FAF9F6] border-b border-gray-100">
                 <tr>
-                  <th className="px-6 py-5 text-[13px] font-black tracking-wide text-[#8A1538]">تاريخ الطلب</th>
-                  <th className="px-6 py-5 text-[13px] font-black tracking-wide text-[#8A1538]">التفاصيل</th>
-                  <th className="px-6 py-5 text-[13px] font-black tracking-wide text-[#8A1538]">الرياضة</th>
-                  <th className="px-6 py-5 text-[13px] font-black tracking-wide text-[#8A1538] text-center">التواصل</th>
-                  <th className="px-6 py-5 text-[13px] font-black tracking-wide text-[#8A1538] text-center">الإجراءات</th>
+                  <th className="px-6 py-5 text-[13px] font-black tracking-wide text-primary">تاريخ الطلب</th>
+                  <th className="px-6 py-5 text-[13px] font-black tracking-wide text-primary">التفاصيل</th>
+                  <th className="px-6 py-5 text-[13px] font-black tracking-wide text-primary">الرياضة</th>
+                  <th className="px-6 py-5 text-[13px] font-black tracking-wide text-primary text-center">التواصل</th>
+                  <th className="px-6 py-5 text-[13px] font-black tracking-wide text-primary text-center">الإجراءات</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -109,13 +109,13 @@ export default function LeadsPage() {
                   <tr key={lead.id} className={`hover:bg-[#F5F5F7] transition-all duration-300 ${lead.status === 'contacted' ? 'bg-[#FAF9F6]/80' : 'bg-white'}`}>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-sm text-gray-500 font-bold">
-                        <Clock className="w-4 h-4 text-[#C5A059]" />
+                        <Clock className="w-4 h-4 text-secondary" />
                         <span dir="ltr">{new Date(lead.createdAt || lead.created_at).toLocaleString('ar-EG', { dateStyle: 'short', timeStyle: 'short' })}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
-                        <span className="font-extrabold text-[#8A1538] text-lg mb-1">{lead.name}</span>
+                        <span className="font-extrabold text-primary text-lg mb-1">{lead.name}</span>
                         <div className="flex items-center gap-1.5 text-sm text-gray-500 font-bold" dir="ltr">
                           <Phone className="w-3.5 h-3.5" />
                           {lead.phone}
@@ -123,7 +123,7 @@ export default function LeadsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-black tracking-wide bg-[#C5A059]/10 text-[#C5A059]">
+                      <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-black tracking-wide bg-secondary/10 text-secondary">
                         {lead.sportInterest || "غير محدد"}
                       </span>
                     </td>

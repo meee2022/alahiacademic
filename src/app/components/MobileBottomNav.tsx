@@ -65,7 +65,7 @@ export function MobileBottomNav() {
       {/* Full Screen Menu */}
       <div 
         className={cn(
-          "fixed inset-0 bg-[#8A1538] z-40 flex flex-col pt-10 px-4 pb-24 transition-transform duration-300 transform md:hidden overflow-y-auto print:hidden",
+          "fixed inset-0 bg-primary z-40 flex flex-col pt-10 px-4 pb-24 transition-transform duration-300 transform md:hidden overflow-y-auto print:hidden",
           isMenuOpen ? "translate-y-0" : "translate-y-full"
         )}
       >
@@ -92,7 +92,7 @@ export function MobileBottomNav() {
                 className={cn(
                   "flex flex-col items-center justify-center p-4 rounded-2xl gap-2 transition-all text-center",
                   isActive
-                    ? "bg-[#C5A059] text-[#8A1538]"
+                    ? "bg-secondary text-primary"
                     : "bg-white/5 text-white hover:bg-white/10"
                 )}
               >
@@ -124,12 +124,12 @@ export function MobileBottomNav() {
               className={cn(
                 "flex flex-col items-center justify-center p-2 rounded-xl transition-all min-w-[64px]",
                 isActive
-                  ? "text-[#8A1538]"
+                  ? "text-primary"
                   : "text-gray-500 hover:bg-gray-50"
               )}
             >
               <item.icon className={cn("w-6 h-6 mb-1 transition-transform", isActive && "scale-110")} />
-              <span className={cn("text-[10px] font-bold", isActive ? "text-[#8A1538]" : "text-gray-500")}>
+              <span className={cn("text-[10px] font-bold", isActive ? "text-primary" : "text-gray-500")}>
                 {item.name}
               </span>
             </Link>
@@ -139,7 +139,7 @@ export function MobileBottomNav() {
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           className={cn(
             "flex flex-col items-center justify-center p-2 rounded-xl transition-all min-w-[64px]",
-             isMenuOpen ? "text-[#8A1538]" : "text-gray-500 hover:bg-gray-50"
+             isMenuOpen ? "text-primary" : "text-gray-500 hover:bg-gray-50"
           )}
         >
           <Menu className={cn("w-6 h-6 mb-1 transition-transform", isMenuOpen && "scale-110")} />
