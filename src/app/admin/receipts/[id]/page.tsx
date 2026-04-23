@@ -9,6 +9,7 @@ export default function ReceiptPage() {
   const params = useParams();
   const router = useRouter();
   const [payment, setPayment] = useState<any>(null);
+  const [lang, setLang] = useState<"ar" | "en">("ar");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -52,23 +53,28 @@ export default function ReceiptPage() {
     );
   }
 
+  const isEn = lang === "en";
   const receiptNumber = payment.id?.split("-")[0].toUpperCase();
-  const dateFormatted = new Date(payment.date || new Date()).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" });
+  const dateFormatted = new Date(payment.date || new Date()).toLocaleDateString(isEn ? "en-US" : "ar-EG", { year: "numeric", month: "long", day: "numeric" });
   const endDateFormatted = payment.endOfSubscriptionDate
-    ? new Date(payment.endOfSubscriptionDate).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" })
+    ? new Date(payment.endOfSubscriptionDate).toLocaleDateString(isEn ? "en-US" : "ar-EG", { year: "numeric", month: "long", day: "numeric" })
     : null;
 
   const paymentTypeLabel =
-    payment.paymentType === "subscription" ? "اشتراك تدريب" :
-    payment.paymentType === "belt" ? "اختبار حزام" :
-    payment.paymentType === "uniform" ? "زي رياضي" :
-    payment.paymentType === "registration" ? "رسوم تسجيل" : "أخرى";
+    payment.paymentType === "subscription" ? (isEn ? "Training Subscription" : "اشتراك تدريب") :
+    payment.paymentType === "belt" ? (isEn ? "Belt Test" : "اختبار حزام") :
+    payment.paymentType === "uniform" ? (isEn ? "Uniform" : "زي رياضي") :
+    payment.paymentType === "registration" ? (isEn ? "Registration Fee" : "رسوم تسجيل") : (isEn ? "Other" : "أخرى");
 
   const methodLabel =
-    payment.method === "cash" ? "نقدي (كاش)" :
-    payment.method === "transferATM" ? "تحويل بنكي" :
-    payment.method === "bankDeposit" ? "إيداع بنكي" :
-    payment.method === "cardMachine" ? "شبكة / صراف" : payment.method;
+    payment.method === "cash" ? (isEn ? "Cash" : "نقدي (كاش)") :
+    payment.method === "transferATM" ? (isEn ? "Bank Transfer" : "تحويل بنكي") :
+    payment.method === "bankDeposit" ? (isEn ? "Bank Deposit" : "إيداع بنكي") :
+    payment.method === "cardMachine" ? (isEn ? "Card" : "شبكة / صراف") : payment.method;
+
+  const entryTypeLabel = payment.category === "income" 
+    ? (isEn ? "✅ Income" : "✅ إيراد") 
+    : (isEn ? "🔴 Expense" : "🔴 مصروف");
 
   return (
     <>
@@ -314,24 +320,38 @@ export default function ReceiptPage() {
       
       <div className="receipt-page">
         {/* Controls - hidden when printing */}
-        <div className="controls">
+        <div className="controls" style={{ flexDirection: isEn ? "row-reverse" : "row" }}>
           <button className="btn-back" onClick={() => router.back()}>
-            <ArrowRight style={{width:18,height:18}} />
-            رجوع
+            <ArrowRight style={{width:18,height:18, transform: isEn ? "rotate(180deg)" : "none"}} />
+            {isEn ? "Back" : "رجوع"}
           </button>
-          <button className="btn-print" onClick={() => window.print()}>
-            <Printer style={{width:18,height:18}} />
-            طباعة الإيصال
-          </button>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button 
+              onClick={() => setLang(lang === "ar" ? "en" : "ar")}
+              style={{
+                display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px",
+                background: "rgba(255,255,255,0.1)", backdropFilter: "blur(10px)",
+                color: "white", border: "1px solid rgba(255,255,255,0.2)", borderRadius: "12px",
+                fontWeight: 700, cursor: "pointer", fontFamily: "inherit", fontSize: "14px",
+                transition: "all 0.2s"
+              }}
+            >
+              {isEn ? "🌐 عربي" : "🌐 English"}
+            </button>
+            <button className="btn-print" onClick={() => window.print()}>
+              <Printer style={{width:18,height:18}} />
+              {isEn ? "Print Receipt" : "طباعة الإيصال"}
+            </button>
+          </div>
         </div>
 
         {/* Receipt Card */}
-        <div className="receipt-card">
+        <div className="receipt-card" dir={isEn ? "ltr" : "rtl"}>
           {/* Header */}
-          <div className="receipt-header">
+          <div className="receipt-header" style={{ textAlign: isEn ? "left" : "right" }}>
             <div>
-              <div className="academy-name">أكاديمية النادي الأهلي</div>
-              <div className="receipt-subtitle">إيصال استلام / Payment Receipt</div>
+              <div className="academy-name">{isEn ? "Al Ahli Academy" : "أكاديمية النادي الأهلي"}</div>
+              <div className="receipt-subtitle">{isEn ? "Payment Receipt" : "إيصال استلام / Payment Receipt"}</div>
               <div className="receipt-number-badge">#{receiptNumber}</div>
             </div>
             <img src="/logo.png" alt="Logo" style={{ width: 80, height: 80, objectFit: 'contain', background: 'white', padding: 4, borderRadius: 8 }} />
@@ -342,54 +362,54 @@ export default function ReceiptPage() {
             {/* Member & Sport Info */}
             <div className="info-grid">
               <div className="info-box">
-                <div className="info-label">👤 اسم العضو</div>
-                <div className="info-value">{payment.Member?.fullNameArabic || "غير مسجل"}</div>
+                <div className="info-label">👤 {isEn ? "Member Name" : "اسم العضو"}</div>
+                <div className="info-value">{payment.Member?.fullNameArabic || (isEn ? "Not registered" : "غير مسجل")}</div>
                 {payment.Member?.phoneFather && (
                   <div style={{fontSize:12,color:"#999",marginTop:4,direction:"ltr"}}>{payment.Member.phoneFather}</div>
                 )}
               </div>
               <div className="info-box">
-                <div className="info-label">🏅 الرياضة</div>
-                <div className="info-value">{payment.Sport?.name || "عام"}</div>
+                <div className="info-label">🏅 {isEn ? "Sport" : "الرياضة"}</div>
+                <div className="info-value">{payment.Sport?.name || (isEn ? "General" : "عام")}</div>
               </div>
               <div className="info-box">
-                <div className="info-label">📅 تاريخ الدفع</div>
+                <div className="info-label">📅 {isEn ? "Payment Date" : "تاريخ الدفع"}</div>
                 <div className="info-value">{dateFormatted}</div>
               </div>
               <div className="info-box">
-                <div className="info-label">📋 نوع المعاملة</div>
+                <div className="info-label">📋 {isEn ? "Transaction Type" : "نوع المعاملة"}</div>
                 <div className="info-value">{paymentTypeLabel}</div>
               </div>
             </div>
 
             {/* Amount Card */}
             <div className="amount-card">
-              <div className="amount-label">المبلغ المدفوع</div>
+              <div className="amount-label">{isEn ? "Amount Paid" : "المبلغ المدفوع"}</div>
               <div className="amount-value">
                 {Number(payment.amount || 0).toLocaleString()}
-                <span className="amount-currency">ريال</span>
+                <span className="amount-currency">{isEn ? "QAR" : "ريال"}</span>
               </div>
             </div>
 
             {/* Details */}
             <div style={{marginBottom: 8}}>
               <div className="details-row">
-                <span className="detail-key">وسيلة الدفع</span>
+                <span className="detail-key">{isEn ? "Payment Method" : "وسيلة الدفع"}</span>
                 <span className="detail-val">{methodLabel}</span>
               </div>
               <div className="details-row">
-                <span className="detail-key">نوع القيد</span>
-                <span className="detail-val">{payment.category === "income" ? "✅ إيراد" : "🔴 مصروف"}</span>
+                <span className="detail-key">{isEn ? "Entry Type" : "نوع القيد"}</span>
+                <span className="detail-val">{entryTypeLabel}</span>
               </div>
               {payment.notes && (
                 <div className="details-row">
-                  <span className="detail-key">ملاحظات</span>
+                  <span className="detail-key">{isEn ? "Notes" : "ملاحظات"}</span>
                   <span className="detail-val">{payment.notes}</span>
                 </div>
               )}
               {endDateFormatted && (
                 <div className="details-row">
-                  <span className="detail-key">صلاحية الاشتراك حتى</span>
+                  <span className="detail-key">{isEn ? "Valid Until" : "صلاحية الاشتراك حتى"}</span>
                   <span className="detail-val">{endDateFormatted}</span>
                 </div>
               )}
@@ -399,11 +419,11 @@ export default function ReceiptPage() {
           {/* Footer */}
           <div className="receipt-footer">
             <div>
-              <div className="signature-line">توقيع المستلم</div>
+              <div className="signature-line">{isEn ? "Receiver Signature" : "توقيع المستلم"}</div>
             </div>
-            <div className="footer-system">
+            <div className="footer-system" style={{ textAlign: isEn ? "right" : "left" }}>
               <div>Generated by system</div>
-              <div>{new Date().toLocaleDateString("ar-EG")}</div>
+              <div>{new Date().toLocaleDateString(isEn ? "en-US" : "ar-EG")}</div>
             </div>
           </div>
           

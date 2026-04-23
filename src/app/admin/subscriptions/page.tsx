@@ -10,6 +10,7 @@ export default function SubscriptionsPage() {
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const [sports, setSports] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<string>("all");
+  const [selectedSportId, setSelectedSportId] = useState<string>("all");
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -85,6 +86,7 @@ export default function SubscriptionsPage() {
   const filtered = subscriptions.filter(sub => {
     const matchesSearch = sub.Member?.fullNameArabic?.includes(search) || sub.Sport?.name?.includes(search);
     let matchesStatus = true;
+    const matchesSport = selectedSportId === "all" || sub.Sport?.id === selectedSportId;
     
     // Status computation
     const today = new Date();
@@ -103,7 +105,7 @@ export default function SubscriptionsPage() {
     if (activeTab === "expired") matchesStatus = computedStatus === "expired";
     if (activeTab === "expiring_soon") matchesStatus = isExpiringSoon;
 
-    return matchesSearch && matchesStatus;
+    return matchesSearch && matchesStatus && matchesSport;
   });
 
   const openEdit = (sub: any) => {
@@ -180,26 +182,56 @@ export default function SubscriptionsPage() {
         />
       </div>
 
-      {/* Status Filter Pills */}
-      <div className="flex flex-wrap justify-center gap-3">
-        {[
-          { id: "all", label: "الكل" },
-          { id: "active", label: "نشط" },
-          { id: "expired", label: "منتهي" },
-          { id: "expiring_soon", label: "ينتهي قريباً" }
-        ].map(tab => (
+      {/* Filters Section */}
+      <div className="flex flex-col items-center gap-4 mb-6">
+        {/* Sport Filter Pills */}
+        <div className="flex flex-wrap justify-center gap-2 max-w-4xl">
           <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`px-8 py-2.5 rounded-full text-sm font-bold transition-all border ${
-              activeTab === tab.id 
-                ? "bg-primary text-white border-primary shadow-md shadow-primary/20" 
-                : "bg-white text-primary border-primary/20 hover:border-primary/40 hover:bg-rose-50/30"
+            onClick={() => setSelectedSportId("all")}
+            className={`px-5 py-2 rounded-xl text-sm font-bold transition-all border ${
+              selectedSportId === "all" 
+                ? "bg-secondary text-white border-secondary shadow-md shadow-secondary/20" 
+                : "bg-white text-secondary border-secondary/20 hover:border-secondary/40 hover:bg-amber-50/30"
             }`}
           >
-            {tab.label}
+            جميع الرياضات
           </button>
-        ))}
+          {sports.map(sport => (
+            <button
+              key={sport.id}
+              onClick={() => setSelectedSportId(sport.id)}
+              className={`px-5 py-2 rounded-xl text-sm font-bold transition-all border ${
+                selectedSportId === sport.id 
+                  ? "bg-secondary text-white border-secondary shadow-md shadow-secondary/20" 
+                  : "bg-white text-secondary border-secondary/20 hover:border-secondary/40 hover:bg-amber-50/30"
+              }`}
+            >
+              {sport.name}
+            </button>
+          ))}
+        </div>
+
+        {/* Status Filter Pills */}
+        <div className="flex flex-wrap justify-center gap-3">
+          {[
+            { id: "all", label: "الكل" },
+            { id: "active", label: "نشط" },
+            { id: "expired", label: "منتهي" },
+            { id: "expiring_soon", label: "ينتهي قريباً" }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-8 py-2.5 rounded-full text-sm font-bold transition-all border ${
+                activeTab === tab.id 
+                  ? "bg-primary text-white border-primary shadow-md shadow-primary/20" 
+                  : "bg-white text-primary border-primary/20 hover:border-primary/40 hover:bg-rose-50/30"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Subscription Cards Grid */}
