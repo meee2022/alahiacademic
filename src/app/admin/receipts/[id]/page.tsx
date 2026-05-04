@@ -19,7 +19,7 @@ export default function ReceiptPage() {
       const { data, error } = await insforge.database.from("Payment")
         .select(`
           *,
-          Member:memberId (fullNameArabic, phoneFather),
+          Member:memberId (fullNameArabic, fullNameEnglish, phoneFather),
           Sport:sportId (name)
         `)
         .eq("id", params.id)
@@ -363,7 +363,7 @@ export default function ReceiptPage() {
             <div className="info-grid">
               <div className="info-box">
                 <div className="info-label">👤 {isEn ? "Member Name" : "اسم العضو"}</div>
-                <div className="info-value">{payment.Member?.fullNameArabic || (isEn ? "Not registered" : "غير مسجل")}</div>
+                <div className="info-value">{isEn ? (payment.Member?.fullNameEnglish || payment.Member?.fullNameArabic || "Not registered") : (payment.Member?.fullNameArabic || "غير مسجل")}</div>
                 {payment.Member?.phoneFather && (
                   <div style={{fontSize:12,color:"#999",marginTop:4,direction:"ltr"}}>{payment.Member.phoneFather}</div>
                 )}

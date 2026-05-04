@@ -19,7 +19,7 @@ export default function EnrollmentReceiptPage() {
       const { data, error } = await insforge.database.from("SportsEnrollment")
         .select(`
           *,
-          Member:memberId (fullNameArabic, phoneFather),
+          Member:memberId (fullNameArabic, fullNameEnglish, phoneFather),
           Sport:sportId (name)
         `)
         .eq("id", params.id)
@@ -344,7 +344,7 @@ export default function EnrollmentReceiptPage() {
             <div className="info-grid">
               <div className="info-box">
                 <div className="info-label">👤 {isEn ? "Member Name" : "اسم المتدرب"}</div>
-                <div className="info-value">{enrollment.Member?.fullNameArabic || (isEn ? "Not registered" : "غير مسجل")}</div>
+                <div className="info-value">{isEn ? (enrollment.Member?.fullNameEnglish || enrollment.Member?.fullNameArabic || "Not registered") : (enrollment.Member?.fullNameArabic || "غير مسجل")}</div>
                 {enrollment.Member?.phoneFather && (
                   <div style={{fontSize:12,color:"#999",marginTop:4,direction:"ltr"}}>{enrollment.Member.phoneFather}</div>
                 )}
