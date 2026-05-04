@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, CheckCircle2, XCircle, CalendarDays, Save, BarChart3, X, Eye, Users, Trophy } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, CalendarDays, Save, BarChart3, X, Eye, Users, Trophy, Search } from "lucide-react";
 import { getSports, getMembers, MemberWithEnrollments, markAttendance, getAttendanceByDateAndSport } from "@/lib/insforge/queries";
 import { insforge } from "@/lib/insforge/client";
 
@@ -148,6 +148,11 @@ export default function AttendancePage() {
       setSaving(false);
     }
   };
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const filteredStudents = students.filter(s =>
+    s.fullNameArabic.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const presentCount = students.filter(s => s.present).length;
   const absentCount = students.length - presentCount;
@@ -302,8 +307,19 @@ export default function AttendancePage() {
       {loading ? (
         <div className="flex justify-center py-16"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>
       ) : searched && students.length > 0 ? (
+        <>
+          <div className="relative">
+            <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="ابحث باسم اللاعب..."
+              className="w-full bg-white border border-gray-200 rounded-[14px] py-3 pr-11 pl-4 text-sm font-medium text-gray-700 placeholder-gray-400 outline-none focus:border-primary/40 shadow-[0_2px_10px_rgb(0,0,0,0.04)]"
+            />
+          </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {students.map((student, idx) => (
+          {filteredStudents.map((student, idx) => (
             <div key={student.id} className={`relative bg-white rounded-[20px] p-5 shadow-[0_2px_15px_rgb(0,0,0,0.05)] border transition-all ${student.present ? 'border-emerald-200' : 'border-gray-100'}`}>
               <div className="flex items-center gap-4">
                 {/* Avatar */}
@@ -355,6 +371,7 @@ export default function AttendancePage() {
             </div>
           ))}
         </div>
+        </>
       ) : searched && students.length === 0 && !loading ? (
         <div className="py-16 text-center text-gray-400 text-sm font-medium">لا يوجد لاعبون مسجلون في هذه الرياضة</div>
       ) : null}
