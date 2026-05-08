@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Save, Loader2 } from "lucide-react";
 import { insforge } from "@/lib/insforge/client";
 import { useRouter } from "next/navigation";
@@ -15,6 +15,14 @@ export default function AddMemberModal({
   sports: any[];
 }) {
   const [saving, setSaving] = useState(false);
+  const [coaches, setCoaches] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    insforge.database.from("Coach").select("id, fullName, sportId, CoachsalaryPercentage").order("fullName")
+      .then(({ data }) => setCoaches(data || []));
+  }, [isOpen]);
+
   const [form, setForm] = useState({
     fullNameArabic: "",
     fullNameEnglish: "",
@@ -31,7 +39,8 @@ export default function AddMemberModal({
     paidAmount: "",
     paymentMethod: "cash",
     dateOfBirth: "",
-    nationalId: ""
+    nationalId: "",
+    coachId: ""
   });
 
   const router = useRouter();
@@ -69,7 +78,8 @@ export default function AddMemberModal({
           subscriptionStart: form.subscriptionStart,
           subscriptionEnd: form.subscriptionEnd,
           monthlyFee: 0,
-          status: "active"
+          status: "active",
+          ...(form.coachId ? { coachId: form.coachId } : {})
         });
         if (enrollErr) throw enrollErr;
 
@@ -190,12 +200,30 @@ export default function AddMemberModal({
             <select
               className="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-[#7a1b32] focus:border-[#7a1b32] text-gray-900 bg-white"
               value={form.sportId}
-              onChange={e => setForm({...form, sportId: e.target.value})}
+              onChange={e => setForm({...form, sportId: e.target.value, coachId: ""})}
             >
               <option value="">-- بدون رياضة حالياً --</option>
               {sports.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
             </select>
           </div>
+
+          {form.sportId && (
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">المدرب (اختياري)</label>
+              <select
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-[#7a1b32] focus:border-[#7a1b32] text-gray-900 bg-white"
+                value={form.coachId}
+                onChange={e => setForm({...form, coachId: e.target.value})}
+              >
+                <option value="">-- اختر المدرب --</option>
+                {coaches.filter(c => !c.sportId || c.sportId === form.sportId).map(c => (
+                  <option key={c.id} value={c.id}>
+                    {c.fullName}{c.CoachsalaryPercentage ? ` — ${c.CoachsalaryPercentage}%` : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {form.sportId && (
             <>

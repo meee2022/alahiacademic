@@ -13,6 +13,7 @@ export default function MemberDetailsPage() {
   
   const [member, setMember] = useState<any>(null);
   const [sports, setSports] = useState<any[]>([]);
+  const [coaches, setCoaches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [membershipNumber, setMembershipNumber] = useState<number | null>(null);
@@ -29,9 +30,14 @@ export default function MemberDetailsPage() {
     async function init() {
       if (!id || typeof id !== "string") return;
       try {
-        const [data, sportsData] = await Promise.all([getMemberById(id), getSports()]);
+        const [data, sportsData, { data: coachesData }] = await Promise.all([
+          getMemberById(id),
+          getSports(),
+          insforge.database.from("Coach").select("id, fullName, sportId")
+        ]);
         setMember(data);
         setSports(sportsData || []);
+        setCoaches(coachesData || []);
         
         setFormData({
           fullNameArabic: data.fullNameArabic || "",
@@ -302,7 +308,9 @@ export default function MemberDetailsPage() {
                     </div>
                     <div>
                       <div className="font-black text-tertiary text-sm mb-0.5">{en.Sport?.name}</div>
-                      <div className="text-[10px] text-gray-400 font-bold">أساسي</div>
+                      <div className="text-[10px] text-gray-400 font-bold">
+                        {coaches.find(c => c.id === en.coachId)?.fullName || "أساسي"}
+                      </div>
                     </div>
                   </div>
                   <ArrowLeft className="w-4 h-4 text-gray-300 transform rotate-180" />

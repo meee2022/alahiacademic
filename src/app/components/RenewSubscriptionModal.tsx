@@ -28,7 +28,7 @@ export function RenewSubscriptionModal({ memberId, enrollments }: { memberId: st
     amount: activeEnrollments[0]?.monthlyFee || 0,
     paymentMethod: "cash",
     endDate: activeEnrollments[0] ? calculateEndDate(activeEnrollments[0], 1) : "",
-    coachId: "",
+    coachId: activeEnrollments[0]?.coachId || "",
   });
 
   // Fetch all coaches when modal opens
@@ -56,6 +56,12 @@ export function RenewSubscriptionModal({ memberId, enrollments }: { memberId: st
     try {
       const selectedCoach = coaches.find(c => c.id === formData.coachId);
       const coachNote = selectedCoach ? `المدرب: ${selectedCoach.fullName}` : "";
+
+      if (formData.coachId) {
+        await insforge.database.from("SportsEnrollment")
+          .update({ coachId: formData.coachId })
+          .eq("id", formData.enrollmentId);
+      }
 
       const result = await renewSubscription(
         formData.enrollmentId,
@@ -116,7 +122,7 @@ export function RenewSubscriptionModal({ memberId, enrollments }: { memberId: st
                   value={formData.enrollmentId}
                   onChange={(e) => {
                     const en = enrollments.find(x => x.id === e.target.value);
-                    setFormData({...formData, enrollmentId: e.target.value, amount: en?.monthlyFee || 0, endDate: calculateEndDate(en, formData.months), coachId: ""});
+                    setFormData({...formData, enrollmentId: e.target.value, amount: en?.monthlyFee || 0, endDate: calculateEndDate(en, formData.months), coachId: en?.coachId || ""});
                   }}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                   required
